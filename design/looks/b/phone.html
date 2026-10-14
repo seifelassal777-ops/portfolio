@@ -1,0 +1,712 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Night Drive Phone</title>
+<meta name="color-scheme" content="dark">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.add('js');</script>
+<style>
+:root{
+  --night:#0B1426; --asphalt:#1C2333; --sodium:#F3B562; --moon:#9DB8E8; --rose:#FF6F91; --paper:#EEE8DC;
+  --paper-2:rgba(238,232,220,.78); --line:rgba(157,184,232,.22);
+  --sans:"General Sans", ui-sans-serif, system-ui, sans-serif; --mono:"JetBrains Mono", ui-monospace, monospace;
+}
+*{box-sizing:border-box}
+html{background:var(--night);color:var(--paper);scrollbar-color:#3A4766 var(--night);-webkit-text-size-adjust:100%}
+body{margin:0;font-family:var(--sans);background:var(--night);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+::selection{background:var(--rose);color:var(--night)}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--sodium);outline-offset:3px;border-radius:8px}
+.mono{font-family:var(--mono);font-weight:400;letter-spacing:.01em}
+h1,h2{font-weight:500;margin:0;letter-spacing:-.03em;text-wrap:balance}
+p{margin:0}
+
+/* the pinned stage: one fixed layer holds the 3D scene and every HUD piece */
+#stage{position:fixed;inset:0;overflow:hidden;z-index:0;background:radial-gradient(120% 80% at 50% 100%,#26324F 0%,#0E1830 45%,#050914 100%)}
+#gl{position:absolute;inset:0;width:100%;height:100%;display:block}
+#wash{position:absolute;inset:0;pointer-events:none;opacity:0;background:radial-gradient(90% 70% at 50% 55%,#C9D5EE 0%,#8FA0C6 55%,#56658C 100%)}
+#cut{position:absolute;inset:0;pointer-events:none;opacity:0;background:var(--night)}
+.scrim{position:absolute;pointer-events:none}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:0 24px;border-radius:999px;font:500 17px/1 var(--sans);text-decoration:none;transition:background-color .2s ease-out,color .2s ease-out,border-color .2s ease-out,transform .15s ease-out}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:var(--sodium);color:#1A1206}
+.btn.primary:hover{background:#FFC97E}
+.btn.ghost{border:1px solid rgba(238,232,220,.45);color:var(--paper)}
+.btn.ghost:hover{border-color:var(--paper);background:rgba(238,232,220,.08)}
+
+.top{position:absolute;left:0;right:0;top:0;display:flex;align-items:center;gap:16px}
+.mark{font:600 16px/1 var(--sans);letter-spacing:-.01em;text-decoration:none;min-height:44px;display:inline-flex;align-items:center;opacity:calc(1 - var(--gate,1))}
+.skip-top{font:500 15px/1 var(--sans);text-decoration:none;min-height:44px;display:inline-flex;align-items:center;padding:0 16px;border-radius:999px;border:1px solid rgba(238,232,220,.3);opacity:calc(1 - var(--gate,1))}
+.skip-top:hover{border-color:var(--paper)}
+.views{display:flex;gap:4px;font:400 12px/1 var(--mono)}
+.views span{padding:6px 9px;border-radius:999px;color:rgba(238,232,220,.5);transition:color .3s ease-out,background-color .3s ease-out}
+.views span.on{color:var(--night);background:var(--paper)}
+
+.map{position:absolute}
+.map-line{position:relative;height:12px}
+.map-line::before{content:"";position:absolute;left:0;right:0;top:5px;height:2px;background:rgba(238,232,220,.18);border-radius:2px}
+.map-fill{position:absolute;left:0;right:0;top:5px;height:2px;background:var(--rose);transform-origin:0 50%;transform:scaleX(0);border-radius:2px}
+.map-dot{position:absolute;top:2px;width:8px;height:8px;margin-left:-4px;border-radius:50%;background:var(--night);border:1.5px solid rgba(238,232,220,.4)}
+.map-dot.lit{border-color:var(--rose);background:var(--rose)}
+.map-car{position:absolute;top:-2px;width:16px;height:16px;margin-left:-8px;border-radius:50%;background:var(--paper);box-shadow:0 0 0 4px rgba(255,111,145,.28),0 2px 10px rgba(0,0,0,.4)}
+.map-label{display:flex;gap:10px;align-items:baseline;margin-top:10px}
+.map-label .mono{font-size:12px;color:var(--sodium)}
+.map-label #stopName{font-size:15px;font-weight:500}
+
+.np{position:absolute;display:flex;align-items:center;gap:12px;padding:10px 16px 10px 12px;border-radius:14px;background:rgba(11,20,38,.78);border:1px solid var(--line)}
+.np .eq{display:flex;gap:3px;align-items:flex-end;height:22px;width:26px}
+.np .eq i{display:block;width:4px;height:22px;background:var(--rose);border-radius:2px;transform-origin:50% 100%;transform:scaleY(.25)}
+.np-l{display:block;font-size:12px;color:rgba(238,232,220,.6)}
+.np-s{display:block;font-size:16px;font-weight:500;margin-top:3px}
+
+.cp{position:absolute;width:0;height:0;pointer-events:none}
+.cp-in{position:absolute;left:0;bottom:12px;transform:translateX(-50%);white-space:nowrap;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px}
+.cp-in .mono{font-size:12px;color:#FFD38C}
+.cp-in b{font-weight:500;font-size:16px;padding:8px 14px;border-radius:999px;background:rgba(11,20,38,.8);border:1px solid rgba(255,200,112,.45)}
+.cp-in::after{content:"";width:1px;height:26px;background:linear-gradient(#FFD38C,transparent)}
+
+.photo{position:relative;background:#EEE8DC;padding:10px 10px 30px;box-shadow:0 18px 40px rgba(0,0,0,.45);transform:rotate(-2deg)}
+.photo-in{height:100%;display:flex;align-items:center;justify-content:center;text-align:center;background:repeating-linear-gradient(135deg,#2A3554 0 10px,#26304C 10px 20px);color:var(--paper);font:400 12px/1.4 var(--mono);padding:8px}
+.ph-note{font:400 12px/1.4 var(--mono);color:rgba(238,232,220,.55)}
+
+.route{display:block;width:100%;height:auto;overflow:visible}
+.route .leg{fill:none;stroke:var(--rose);stroke-width:2;stroke-dasharray:1;stroke-dashoffset:1;stroke-linecap:round}
+.route .ghost{fill:none;stroke:rgba(238,232,220,.16);stroke-width:1.2;stroke-dasharray:3 5}
+.route .city circle{fill:var(--night);stroke:rgba(238,232,220,.45);stroke-width:1.5;transition:fill .3s ease-out,stroke .3s ease-out}
+.route .city text{fill:rgba(238,232,220,.55);font:400 14px var(--mono);transition:fill .3s ease-out}
+.route .city.been circle{fill:var(--rose);stroke:var(--rose)}
+.route .city.on circle{fill:var(--paper);stroke:var(--paper)}
+.route .city.on text{fill:var(--paper)}
+.route .jet{fill:var(--paper)}
+.hop{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.hop #hopName{font-weight:500;letter-spacing:-.02em}
+.hop #hopLeg{font-size:12px;color:var(--sodium)}
+
+/* scroll track: each section is a stretch of road; the work section scrolls over the stage */
+main{position:relative;z-index:1}
+main > section[data-t]{pointer-events:none}
+#work{position:relative;z-index:2;background:linear-gradient(180deg,rgba(11,20,38,0) 0,var(--night) 96px);pointer-events:auto}
+#work h2{font-size:inherit}
+.work-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.work-list li{display:flex;justify-content:space-between;gap:16px;padding:18px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.work-list b{font-weight:500}
+.work-list span{color:var(--paper-2)}
+
+html:not(.js) #stage{position:relative;height:auto}
+html:not(.js) .hidejs{display:none}
+.nogl #gl{display:none}
+@media (prefers-reduced-motion: reduce){ .btn,.views span{transition:none} }
+/* ===== phone: 390x844 portrait, the world framed in the upper screen, text as a bottom layer in thumb reach ===== */
+.top{padding:max(6px,env(safe-area-inset-top)) 16px 0;height:56px}
+.top .skip-top{margin-left:auto;font-size:15px}
+.top.gated .mark,.top.gated .skip-top,.top.gated .views{visibility:hidden}
+.top .views{position:absolute;left:16px;top:120px}
+.scrim-a{left:0;right:0;bottom:0;height:68%;background:linear-gradient(180deg,rgba(5,9,20,0) 0,rgba(5,9,20,.78) 34%,rgba(8,14,28,.96) 62%)}
+.map{left:16px;right:16px;top:62px}
+.map-label #stopName{font-size:16px}
+.np{left:16px;top:164px;padding:8px 14px 8px 10px}
+.np-s{font-size:16px}
+.gate{position:absolute;left:16px;right:16px;top:0;bottom:0;display:flex;flex-direction:column;padding:96px 0 max(24px,env(safe-area-inset-bottom))}
+.gate h1{font-size:60px;line-height:.92;letter-spacing:-.045em}
+.gate .lede{font-size:18px;line-height:1.45;color:var(--paper-2);margin-top:16px;max-width:24ch}
+.gate .actions{margin-top:auto;display:flex;flex-direction:column;gap:10px}
+.gate .actions .btn{width:100%;min-height:54px}
+.gate .note{margin-top:14px;font-size:16px;line-height:1.4;color:rgba(238,232,220,.66);text-align:center}
+.chapter{position:absolute;left:16px;right:16px;bottom:max(20px,env(safe-area-inset-bottom))}
+.chapter h2{font-size:42px;line-height:1}
+.chapter .txt p{font-size:17px;line-height:1.5;color:var(--paper-2);margin-top:12px}
+.chapter .txt .ph-note{font-size:12px;margin-top:12px}
+.egypt{display:grid;grid-template-columns:118px 1fr;column-gap:18px;align-items:end}
+.egypt .photo{height:150px;padding:7px 7px 22px;align-self:start;margin-top:4px}
+.egypt .txt{display:contents}
+.egypt h2{grid-column:2;align-self:end;padding-bottom:4px}
+.egypt .txt p{grid-column:1 / -1}
+.move .hop{margin-top:10px}
+.move #hopName{font-size:26px}
+.move .route{margin-top:6px}
+.cp-in b{font-size:16px}
+.s-gate{height:100vh}
+.s-story{height:190vh}
+#work{min-height:100vh;padding:120px 16px 56px}
+#work h2{font-size:44px;line-height:1}
+.work-intro{font-size:17px;line-height:1.5;color:var(--paper-2);margin:14px 0 28px}
+.work-list{font-size:17px;margin-bottom:28px}
+.work-list li{flex-direction:column;gap:4px}
+#work .btn{width:100%}
+
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="gl" aria-hidden="true"></canvas>
+  <div id="wash" aria-hidden="true"></div>
+  <div class="scrim scrim-a" aria-hidden="true"></div>
+
+  <header class="top gated" style="--gate:1">
+    <a class="mark" href="#gate">Seif Elassal</a>
+    <div class="views" aria-label="Camera view"><span data-v="0" class="on">road</span><span data-v="1">bird's-eye</span><span data-v="2">airplane</span></div>
+    <a class="skip-top" href="#work">Skip to the work</a>
+  </header>
+
+  <nav class="map" aria-label="The journey, 11 stops" style="opacity:0;visibility:hidden">
+    <div class="map-line"><i class="map-fill"></i>
+      <i class="map-dot lit" style="left:0%"></i><i class="map-dot lit" style="left:10%"></i><i class="map-dot" style="left:20%"></i><i class="map-dot" style="left:30%"></i><i class="map-dot" style="left:40%"></i><i class="map-dot" style="left:50%"></i><i class="map-dot" style="left:60%"></i><i class="map-dot" style="left:70%"></i><i class="map-dot" style="left:80%"></i><i class="map-dot" style="left:90%"></i><i class="map-dot" style="left:100%"></i>
+      <b class="map-car" style="left:0%"></b></div>
+    <p class="map-label"><span class="mono" id="stopNo">stop 1 of 11</span><span id="stopName">Egypt</span></p>
+  </nav>
+
+  <section class="gate" id="gateCard" aria-label="Start">
+    <h1>Seif <br class="br-ph">Elassal</h1>
+    <p class="lede">My life so far, told as a night drive with music.</p>
+    <div class="actions">
+      <a class="btn primary" href="#egypt" data-offset="0.35">Start the journey</a>
+      <a class="btn ghost" href="#work">Skip to the work</a>
+    </div>
+    <p class="note">You can skip ahead, but you'll miss the journey.</p>
+  </section>
+
+  <article class="chapter egypt" id="cardEgypt" style="opacity:0;visibility:hidden">
+    <div class="photo"><div class="photo-in">photo: Seif age ~5</div></div>
+    <div class="txt">
+      <h2>Egypt</h2>
+      <p>I was born in Egypt and lived there until I was six. My first day of school was at Choueifat.</p>
+      <p class="ph-note">Photo and caricature are placeholders.</p>
+    </div>
+  </article>
+
+  <div class="np" id="np" style="opacity:0;visibility:hidden" aria-label="Now playing">
+    <span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+    <span><span class="mono np-l">Now playing</span><span class="np-s">[Seif's song]</span></span>
+  </div>
+
+  <div class="cp" id="cp" style="opacity:0;visibility:hidden">
+    <div class="cp-in"><span class="mono">checkpoint</span><b>A place of grace</b></div>
+  </div>
+
+  <article class="chapter move" id="cardMove" style="opacity:0;visibility:hidden">
+    <div class="txt">
+      <h2>On the move</h2>
+      <div class="hop"><span id="hopName">Saudi</span><span class="mono" id="hopLeg">first stop, age six</span></div>
+      <svg class="route" viewBox="0 0 360 132" role="img" aria-label="Flight route: Saudi, Abu Dhabi, Oman, Dubai">
+        <path class="ghost" d="M10 104 H350"/>
+        <path class="leg" pathLength="1" d="M28 84 Q120 4 222 86"/>
+        <path class="leg" pathLength="1" d="M222 86 Q290 50 334 110"/>
+        <path class="leg" pathLength="1" d="M334 110 Q330 40 252 58"/>
+        <g class="city"><circle cx="28" cy="84" r="5"/><text x="28" y="122" text-anchor="middle">Saudi</text></g>
+        <g class="city"><circle cx="222" cy="86" r="5"/><text x="196" y="122" text-anchor="middle">Abu Dhabi</text></g>
+        <g class="city"><circle cx="334" cy="110" r="5"/><text x="334" y="132" text-anchor="end">Oman</text></g>
+        <g class="city"><circle cx="252" cy="58" r="5"/><text x="252" y="40" text-anchor="middle">Dubai</text></g>
+        <path class="jet" d="M7 0 L-5 -5 L-2 0 L-5 5 Z" transform="translate(28 84)"/>
+      </svg>
+      <p>Saudi, then Abu Dhabi, then Oman, then Dubai. Same school every time, a new branch each time. Friends were hard to keep.</p>
+    </div>
+  </article>
+
+  <div id="cut" aria-hidden="true"></div>
+</div>
+
+<main>
+  <section id="gate" data-t="0" class="s-gate" aria-hidden="true"></section>
+  <section id="egypt" data-t="1" class="s-story" aria-hidden="true"></section>
+  <section id="drive-1" data-t="2" class="s-story" aria-hidden="true"></section>
+  <section id="drive-2" data-t="3" class="s-story" aria-hidden="true"></section>
+  <section id="drive-3" data-t="4" class="s-story" aria-hidden="true"></section>
+  <section id="move-1" data-t="5" class="s-story" aria-hidden="true"></section>
+  <section id="move-2" data-t="6" class="s-story" aria-hidden="true"></section>
+  <section id="work" class="work">
+    <div class="work-in">
+      <h2>The work</h2>
+      <p class="work-intro">This preview ends here. In the full site, the projects live in this spot.</p>
+      <ul class="work-list">
+        <li><b>Gen3</b><span>The studio I co-founded with Omar and Ahmed</span></li>
+        <li><b>DopaMind</b><span>My final year project</span></li>
+        <li><b>Anchor</b><span>A habits app for days without shape</span></li>
+      </ul>
+      <a class="btn ghost" href="#gate">Back to the start</a>
+    </div>
+  </section>
+</main>
+<script>window.CFG = {"phone":true};</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
+<script type="module">
+import * as THREE from 'three';
+
+const PHONE = !!(window.CFG && window.CFG.phone);
+const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $ = s => document.querySelector(s);
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const smooth = (a, b, v) => { const t = clamp((v - a) / (b - a)); return t * t * (3 - 2 * t); };
+const win = (T, a, b, f = 0.08) => Math.min(smooth(a, a + f, T), 1 - smooth(b - f, b, T)); // fade in at a, out at b
+
+const COL = { night: 0x0B1426, asphalt: 0x1C2333, sodium: 0xF3B562, moon: 0x9DB8E8, rose: 0xFF6F91, paper: 0xEEE8DC };
+
+/* ---------- textures drawn in code ---------- */
+function radialTex(stops, size = 128) {
+  const c = document.createElement('canvas'); c.width = c.height = size;
+  const g = c.getContext('2d'), gr = g.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+  stops.forEach(([o, col]) => gr.addColorStop(o, col));
+  g.fillStyle = gr; g.fillRect(0, 0, size, size);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+const glowTex = radialTex([[0, 'rgba(255,255,255,1)'], [0.18, 'rgba(255,255,255,.55)'], [0.5, 'rgba(255,255,255,.12)'], [1, 'rgba(255,255,255,0)']]);
+const poolTex = radialTex([[0, 'rgba(255,255,255,.9)'], [0.45, 'rgba(255,255,255,.3)'], [1, 'rgba(255,255,255,0)']]);
+
+function caricatureTex() { // big-head caricature placeholder: original drawing, to be redrawn from Seif's photos
+  const W = 256, H = 320, c = document.createElement('canvas'); c.width = W; c.height = H;
+  const g = c.getContext('2d'); g.lineJoin = 'round'; g.lineCap = 'round';
+  const ink = '#141826';
+  // shoulders + tee
+  g.fillStyle = '#2F4C7E'; g.strokeStyle = ink; g.lineWidth = 6;
+  g.beginPath(); g.moveTo(52, 320); g.quadraticCurveTo(58, 246, 128, 238); g.quadraticCurveTo(198, 246, 204, 320); g.closePath(); g.fill(); g.stroke();
+  // neck
+  g.fillStyle = '#A8704C'; g.beginPath(); g.moveTo(110, 214); g.lineTo(110, 246); g.quadraticCurveTo(128, 254, 146, 246); g.lineTo(146, 214); g.closePath(); g.fill(); g.stroke();
+  // ears
+  g.fillStyle = '#B97E58';
+  [[40, 136], [216, 136]].forEach(([x, y]) => { g.beginPath(); g.ellipse(x, y, 16, 22, 0, 0, Math.PI * 2); g.fill(); g.stroke(); });
+  // head
+  g.beginPath(); g.ellipse(128, 128, 90, 98, 0, 0, Math.PI * 2); g.fill(); g.stroke();
+  // hair: dark, a little volume on top
+  g.fillStyle = '#1A1310';
+  g.beginPath(); g.moveTo(40, 120);
+  g.bezierCurveTo(30, 40, 90, 14, 132, 20); g.bezierCurveTo(186, 18, 228, 50, 216, 122);
+  g.bezierCurveTo(206, 92, 190, 70, 162, 64); g.bezierCurveTo(130, 76, 92, 72, 70, 64);
+  g.bezierCurveTo(54, 80, 46, 98, 40, 120); g.closePath(); g.fill(); g.stroke();
+  // brows
+  g.strokeStyle = '#1A1310'; g.lineWidth = 9;
+  g.beginPath(); g.moveTo(72, 104); g.quadraticCurveTo(92, 92, 112, 102); g.stroke();
+  g.beginPath(); g.moveTo(144, 102); g.quadraticCurveTo(164, 92, 184, 104); g.stroke();
+  // eyes
+  g.lineWidth = 5; g.strokeStyle = ink; g.fillStyle = '#FBF7EF';
+  [[92, 128], [164, 128]].forEach(([x, y]) => { g.beginPath(); g.ellipse(x, y, 17, 14, 0, 0, Math.PI * 2); g.fill(); g.stroke(); });
+  g.fillStyle = ink; [[95, 130], [161, 130]].forEach(([x, y]) => { g.beginPath(); g.arc(x, y, 7, 0, Math.PI * 2); g.fill(); });
+  g.fillStyle = '#fff'; [[98, 127], [164, 127]].forEach(([x, y]) => { g.beginPath(); g.arc(x, y, 2.4, 0, Math.PI * 2); g.fill(); });
+  // nose
+  g.strokeStyle = '#7E4F33'; g.lineWidth = 5; g.beginPath(); g.moveTo(130, 140); g.quadraticCurveTo(140, 164, 124, 168); g.stroke();
+  // big grin
+  g.fillStyle = '#5A1E22'; g.strokeStyle = ink; g.lineWidth = 5;
+  g.beginPath(); g.moveTo(82, 182); g.quadraticCurveTo(128, 236, 176, 182); g.quadraticCurveTo(128, 196, 82, 182); g.closePath(); g.fill(); g.stroke();
+  g.fillStyle = '#FBF7EF'; g.beginPath(); g.moveTo(88, 185); g.quadraticCurveTo(128, 198, 170, 185); g.quadraticCurveTo(160, 200, 128, 202); g.quadraticCurveTo(98, 200, 88, 185); g.fill();
+  // cheeks
+  g.fillStyle = 'rgba(214,96,96,.28)'; [[70, 168], [186, 168]].forEach(([x, y]) => { g.beginPath(); g.ellipse(x, y, 16, 10, 0, 0, Math.PI * 2); g.fill(); });
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t;
+}
+
+function signTex() {
+  const c = document.createElement('canvas'); c.width = 512; c.height = 224;
+  const g = c.getContext('2d');
+  g.fillStyle = '#16203A'; g.fillRect(0, 0, 512, 224);
+  g.strokeStyle = '#EEE8DC'; g.lineWidth = 6; g.strokeRect(14, 14, 484, 196);
+  g.fillStyle = '#EEE8DC'; g.font = '600 92px "General Sans", sans-serif'; g.textBaseline = 'alphabetic';
+  g.fillText('Egypt', 44, 128);
+  g.fillStyle = '#F3B562'; g.font = '500 34px "JetBrains Mono", monospace'; g.fillText('stop 1 of 11', 46, 184);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t;
+}
+
+/* ---------- renderer ---------- */
+const canvas = $('#gl');
+let renderer = null;
+try {
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: !PHONE, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+} catch (e) { document.documentElement.classList.add('nogl'); }
+
+const scene = new THREE.Scene();
+const fog = new THREE.FogExp2(0x1A2440, 0.0065); scene.fog = fog;
+const camera = new THREE.PerspectiveCamera(PHONE ? 60 : 38, 1, 0.1, 5000);
+
+// sky dome + stars + moon follow the camera
+const skyGroup = new THREE.Group(); scene.add(skyGroup);
+const sky = new THREE.Mesh(new THREE.SphereGeometry(3000, 24, 12), new THREE.ShaderMaterial({
+  side: THREE.BackSide, depthWrite: false, fog: false,
+  uniforms: { top: { value: new THREE.Color(0x050914) }, mid: { value: new THREE.Color(0x0E1830) }, hor: { value: new THREE.Color(0x26324F) } },
+  vertexShader: 'varying vec3 vP; void main(){ vP = normalize(position); gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.); }',
+  fragmentShader: 'uniform vec3 top,mid,hor; varying vec3 vP; void main(){ float y=vP.y; vec3 c = y>0.06 ? mix(mid, top, smoothstep(0.06,0.55,y)) : mix(hor, mid, smoothstep(-0.12,0.06,y)); gl_FragColor=vec4(c,1.); }'
+}));
+skyGroup.add(sky);
+{
+  const n = PHONE ? 520 : 900, p = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) {
+    const th = Math.random() * Math.PI * 2, y = 0.08 + Math.random() * 0.92, r = Math.sqrt(1 - y * y);
+    p.set([Math.cos(th) * r * 2600, y * 2600, Math.sin(th) * r * 2600], i * 3);
+  }
+  const gS = new THREE.BufferGeometry(); gS.setAttribute('position', new THREE.BufferAttribute(p, 3));
+  skyGroup.add(new THREE.Points(gS, new THREE.PointsMaterial({ color: 0xD2DCF4, size: PHONE ? 2.2 : 1.6, sizeAttenuation: false, fog: false, transparent: true, opacity: 0.85, depthWrite: false })));
+  const moon = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xDCE6FF, fog: false, depthWrite: false, transparent: true }));
+  moon.position.set(-900, 1100, -1900); moon.scale.setScalar(260); skyGroup.add(moon);
+  const disc = new THREE.Sprite(new THREE.SpriteMaterial({ map: radialTex([[0, '#F4F6FF'], [0.86, '#E2E8F8'], [0.94, 'rgba(226,232,248,.4)'], [1, 'rgba(226,232,248,0)']]), fog: false, depthWrite: false, transparent: true }));
+  disc.position.copy(moon.position); disc.scale.setScalar(58); skyGroup.add(disc);
+}
+
+scene.add(new THREE.HemisphereLight(0x8FA8DD, 0x0A0E18, 0.75));
+const moonLight = new THREE.DirectionalLight(0xBCD0F7, 1.1); moonLight.position.set(-300, 420, -500); scene.add(moonLight);
+
+const lam = (color, extra = {}) => new THREE.MeshLambertMaterial({ color, flatShading: true, ...extra });
+const basic = (color, extra = {}) => new THREE.MeshBasicMaterial({ color, ...extra });
+const additive = (color, opacity, map) => new THREE.MeshBasicMaterial({ color, opacity, map, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+const glow = (color, s, opacity = 1) => { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color, transparent: true, opacity, blending: THREE.AdditiveBlending, depthWrite: false })); sp.scale.setScalar(s); return sp; };
+
+/* ---------- ground, road, lamps ---------- */
+const groundH = (x, z) => (Math.sin(x * 0.021 + 1.3) * Math.cos(z * 0.017) * 13 + Math.sin(x * 0.063 + z * 0.041) * 5 + Math.sin(z * 0.09) * 1.2 + 7) * smooth(12, 90, Math.abs(x)) - 0.06;
+{
+  const seg = PHONE ? 46 : 80, gg = new THREE.PlaneGeometry(1600, 2200, seg, seg);
+  gg.rotateX(-Math.PI / 2); gg.translate(0, 0, -500);
+  const pos = gg.attributes.position;
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i), z = pos.getZ(i), m = smooth(12, 90, Math.abs(x));
+    pos.setY(i, groundH(x, z));
+  }
+  gg.computeVertexNormals();
+  scene.add(new THREE.Mesh(gg, lam(0x2A3352)));
+  const road = new THREE.Mesh(new THREE.PlaneGeometry(10, 1600).rotateX(-Math.PI / 2), lam(COL.asphalt)); road.position.set(0, 0.02, -620); scene.add(road);
+  [-4.55, 4.55].forEach(x => { const l = new THREE.Mesh(new THREE.PlaneGeometry(0.14, 1600).rotateX(-Math.PI / 2), basic(0x5D6684)); l.position.set(x, 0.03, -620); scene.add(l); });
+  const dashN = 170, dash = new THREE.InstancedMesh(new THREE.PlaneGeometry(0.18, 2.6).rotateX(-Math.PI / 2), basic(0xC7A062), dashN), m4 = new THREE.Matrix4();
+  for (let i = 0; i < dashN; i++) { m4.makeTranslation(0, 0.035, 40 - i * 8); dash.setMatrixAt(i, m4); }
+  scene.add(dash);
+  // lamps every 32 units, alternating sides, with fake light pools on the road
+  const zs = []; for (let z = -30, s = 1; z > -1150; z -= 32, s *= -1) zs.push([z, s]);
+  const pole = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.08, 0.12, 6.2, 6), lam(0x2B3348), zs.length);
+  const arm = new THREE.InstancedMesh(new THREE.BoxGeometry(1.7, 0.09, 0.09), lam(0x2B3348), zs.length);
+  const head = new THREE.InstancedMesh(new THREE.BoxGeometry(0.62, 0.12, 0.32), basic(0xFFD9A0), zs.length);
+  const pool = new THREE.InstancedMesh(new THREE.PlaneGeometry(10, 10).rotateX(-Math.PI / 2), additive(COL.sodium, 0.32, poolTex), zs.length);
+  zs.forEach(([z, s], i) => {
+    const x = s * 6.3;
+    m4.makeTranslation(x, 3.1, z); pole.setMatrixAt(i, m4);
+    m4.makeTranslation(x - s * 0.8, 6.15, z); arm.setMatrixAt(i, m4);
+    m4.makeTranslation(x - s * 1.55, 6.05, z); head.setMatrixAt(i, m4);
+    m4.makeTranslation(x * 0.45, 0.045, z); pool.setMatrixAt(i, m4);
+    const gl = glow(COL.sodium, 4.2, 0.85); gl.position.set(x - s * 1.55, 5.95, z); scene.add(gl);
+  });
+  scene.add(pole, arm, head, pool);
+  // scrub and rocks on the desert floor, so the bird's-eye view has ground to read
+  {
+    const n = PHONE ? 260 : 420, rocks = new THREE.InstancedMesh(new THREE.DodecahedronGeometry(1, 0), lam(0x3A4462), n), q = new THREE.Quaternion(), v = new THREE.Vector3(), sc = new THREE.Vector3();
+    for (let i = 0; i < n; i++) {
+      const side = Math.random() < 0.5 ? -1 : 1, x = side * (9 + Math.pow(Math.random(), 1.6) * 120), z = 40 - Math.random() * 1100, r = 0.4 + Math.random() * 1.6;
+      v.set(x, groundH(x, z) + r * 0.15, z); q.setFromEuler(new THREE.Euler(Math.random(), Math.random() * 3, 0)); sc.set(r * 1.3, r * 0.6, r);
+      rocks.setMatrixAt(i, m4.compose(v, q, sc));
+    }
+    scene.add(rocks);
+  }
+  // far hills
+  const hill = lam(0x0F1628);
+  for (let i = 0; i < 18; i++) {
+    const side = i % 2 ? 1 : -1, h = 40 + Math.random() * 90, r = 70 + Math.random() * 90;
+    const m = new THREE.Mesh(new THREE.ConeGeometry(r, h, 5), hill);
+    m.position.set(side * (260 + Math.random() * 260), h / 2 - 4, 120 - i * 80 - Math.random() * 40); m.rotation.y = Math.random() * 3; scene.add(m);
+  }
+}
+
+/* ---------- stop 1: a small Egyptian street at night ---------- */
+{
+  const wall = lam(0x3A3346), wall2 = lam(0x2E2B3E), win = basic(0xF6C77E), winDim = basic(0x8C6A45);
+  const houses = [[-14, 6, 7, 5, 6], [-22, 22, 8, 7, 7], [-13, 34, 6, 4, 5], [15, 4, 7, 6, 6], [24, 20, 9, 8, 9], [14, 38, 6, 5, 5], [-30, 2, 8, 9, 8], [32, 44, 7, 6, 7], [-24, 52, 7, 5, 6]];
+  houses.forEach(([x, z, w, h, d], i) => {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), i % 2 ? wall : wall2); m.position.set(x, h / 2, z); scene.add(m);
+    const face = x < 0 ? x + w / 2 + 0.02 : x - w / 2 - 0.02; // windows on the road-facing side
+    const rows = Math.max(1, Math.floor(h / 2.6)), cols = Math.max(1, Math.floor(d / 2.4));
+    for (let r = 0; r < rows; r++) for (let cI = 0; cI < cols; cI++) {
+      if ((r + cI + i) % 3 === 0) continue;
+      const wm = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 1.1), (r + cI) % 2 ? win : winDim);
+      wm.position.set(face, 1.6 + r * 2.4, z - d / 2 + 1.3 + cI * 2.3); wm.rotation.y = x < 0 ? Math.PI / 2 : -Math.PI / 2; scene.add(wm);
+    }
+  });
+  const trunk = lam(0x3B2E26), leaf = lam(0x1F3B36, { side: THREE.DoubleSide });
+  [[-8.5, -4], [9, -2], [-9, 16], [9.5, 26], [-10, 40], [10, 12], [-19, 70], [19, 62]].forEach(([x, z]) => {
+    const g = new THREE.Group(), h = 6 + Math.random() * 2.5;
+    const t = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.24, h, 5), trunk); t.position.y = h / 2; t.rotation.z = (Math.random() - 0.5) * 0.12; g.add(t);
+    for (let k = 0; k < 7; k++) {
+      const l = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 3.4, 1, 3), leaf);
+      const p = l.geometry.attributes.position; for (let v = 0; v < p.count; v++) { const yy = p.getY(v); p.setZ(v, -Math.pow((yy + 1.7) / 3.4, 2) * 1.4); }
+      l.geometry.translate(0, 1.7, 0); l.geometry.computeVertexNormals();
+      l.position.y = h; l.rotation.set(-1.0, k / 7 * Math.PI * 2, 0, 'YXZ'); g.add(l);
+    }
+    g.position.set(x, 0, z); scene.add(g);
+  });
+  // stop sign for chapter 1, readable from the opening shot
+  const sign = new THREE.Group();
+  const board = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 1.575), new THREE.MeshBasicMaterial({ map: signTex(), fog: true })); board.position.y = 2.6; sign.add(board);
+  [-1.4, 1.4].forEach(x => { const p = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 2.6, 5), lam(0x2B3348)); p.position.set(x, 1.3, -0.02); sign.add(p); });
+  sign.position.set(-7.4, 0, 12); sign.rotation.y = Math.PI * 0.86; scene.add(sign);
+  document.fonts && document.fonts.ready.then(() => { board.material.map = signTex(); board.material.needsUpdate = true; wake(); });
+}
+
+/* ---------- the car, Seif at the wheel ---------- */
+const car = new THREE.Group(); scene.add(car);
+{
+  const s = new THREE.Shape();
+  [[-2.15, 0.28], [-2.18, 0.62], [-1.25, 0.8], [-0.4, 0.84], [1.55, 0.86], [2.12, 0.72], [2.16, 0.3]].forEach(([x, y], i) => i ? s.lineTo(x, y) : s.moveTo(x, y));
+  const body = new THREE.ExtrudeGeometry(s, { depth: 1.84, bevelEnabled: false }); body.rotateY(-Math.PI / 2); body.translate(0.92, 0, 0);
+  car.add(new THREE.Mesh(body, lam(0xE4D9C3)));
+  const stripe = new THREE.Mesh(new THREE.BoxGeometry(1.86, 0.06, 4.0), lam(COL.rose)); stripe.position.set(0, 0.5, 0); car.add(stripe);
+  const interior = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.1, 2.0), lam(0x1D2130)); interior.position.set(0, 0.86, 0.35); car.add(interior);
+  const seat = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.55, 0.22), lam(0x3D2A2A)); seat.position.set(0, 1.12, 0.95); car.add(seat);
+  const ws = new THREE.Mesh(new THREE.PlaneGeometry(1.7, 0.56), new THREE.MeshBasicMaterial({ color: 0x9DB8E8, transparent: true, opacity: 0.28, side: THREE.DoubleSide, depthWrite: false }));
+  ws.position.set(0, 1.08, -0.45); ws.rotation.x = -0.45; car.add(ws);
+  const wheelG = new THREE.CylinderGeometry(0.37, 0.37, 0.3, 12).rotateZ(Math.PI / 2), wheelM = lam(0x0C0F17);
+  [[-0.92, -1.35], [0.92, -1.35], [-0.92, 1.38], [0.92, 1.38]].forEach(([x, z]) => { const w = new THREE.Mesh(wheelG, wheelM); w.position.set(x, 0.37, z); car.add(w); });
+  // headlights: lamps, glows, a soft beam and the pool of light on the road
+  [-0.62, 0.62].forEach(x => {
+    const l = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.14, 0.05), basic(0xFFF4DE)); l.position.set(x, 0.56, -2.18); car.add(l);
+    const g = glow(0xFFE8C4, 1.6); g.position.set(x, 0.56, -2.3); car.add(g);
+    const t = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.12, 0.05), basic(COL.rose)); t.position.set(x, 0.6, 2.17); car.add(t);
+    const tg = glow(COL.rose, 0.9, 0.8); tg.position.set(x, 0.6, 2.3); car.add(tg);
+  });
+  for (const [r, op] of [[3.0, 0.05], [1.6, 0.07]]) {
+    const cone = new THREE.Mesh(new THREE.ConeGeometry(r, 18, 18, 1, true).rotateX(Math.PI / 2).translate(0, 0, -9), additive(0xFFE6BE, op));
+    cone.position.set(0, 0.55, -2.2); cone.rotation.x = 0.06; car.add(cone);
+  }
+  const beamPool = new THREE.Mesh(new THREE.PlaneGeometry(6, 16).rotateX(-Math.PI / 2), additive(0xFFE0B0, 0.5, poolTex)); beamPool.position.set(0, 0.06, -11); car.add(beamPool);
+  car.userData.seif = new THREE.Sprite(new THREE.SpriteMaterial({ map: caricatureTex(), transparent: true, fog: false }));
+  car.userData.seif.scale.set(1.12, 1.4, 1); car.userData.seif.position.set(-0.42, 1.58, 0.32); car.add(car.userData.seif);
+  car.userData.bigGlow = glow(0xFFE8C4, 6, 0); car.userData.bigGlow.position.set(0, 0.8, -3); car.add(car.userData.bigGlow);
+}
+// the trail the drive leaves: the route drawn on the living map
+const trail = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 1).rotateX(-Math.PI / 2).translate(0, 0, -0.5), additive(COL.rose, 0.0)); trail.position.set(-0.0, 0.07, 6); scene.add(trail);
+
+/* ---------- checkpoint 1: an original "place of grace" ---------- */
+const GRACE = new THREE.Vector3(7.8, 0, -96);
+{
+  const g = new THREE.Group(); g.position.copy(GRACE);
+  const gold = 0xFFC870;
+  const core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.2, 0), basic(0xFFF0C8)); core.position.y = 0.7; g.add(core);
+  const gl = glow(gold, 5.5); gl.position.y = 0.8; g.add(gl);
+  const gl2 = glow(0xFFE2A8, 14, 0.35); gl2.position.y = 1.2; g.add(gl2);
+  for (let i = 0; i < 5; i++) {
+    const t = new THREE.Mesh(new THREE.TorusGeometry(0.75 + i * 0.32, 0.025, 4, 48, Math.PI * (1.0 + i * 0.12)), additive(gold, 0.75 - i * 0.1));
+    t.position.y = 0.8 + i * 0.12; t.rotation.set(Math.PI / 2 + (i - 2) * 0.22, 0, i * 1.3); g.add(t);
+  }
+  const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.5, 9, 14, 1, true), additive(gold, 0.13)); beam.position.y = 4.5; g.add(beam);
+  const pool = new THREE.Mesh(new THREE.PlaneGeometry(9, 9).rotateX(-Math.PI / 2), additive(gold, 0.55, poolTex)); pool.position.y = 0.06; g.add(pool);
+  const stone = lam(0x2C3045);
+  for (let i = 0; i < 7; i++) { const s = new THREE.Mesh(new THREE.DodecahedronGeometry(0.28 + Math.random() * 0.2, 0), stone); const a = i / 7 * Math.PI * 2; s.position.set(Math.cos(a) * 1.9, 0.15, Math.sin(a) * 1.9); g.add(s); }
+  scene.add(g);
+}
+
+/* ---------- clouds and the airplane ---------- */
+{
+  const N = PHONE ? 190 : 300, inst = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, 1), lam(0xA9B8DC, { emissive: 0x1A2342 }), N);
+  const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), v = new THREE.Vector3(), sc = new THREE.Vector3();
+  let k = 0;
+  while (k < N) {
+    const cx = (Math.random() - 0.5) * 560, cz = -120 - Math.random() * 1250, cy = 158 + (Math.random() - 0.5) * 8;
+    if (Math.abs(cx) < 26 && Math.random() < 0.5) continue; // keep the flight path a little clearer
+    const n = 5 + Math.floor(Math.random() * 5);
+    for (let j = 0; j < n && k < N; j++, k++) {
+      const s = 9 + Math.random() * 13;
+      v.set(cx + (Math.random() - 0.5) * 34, cy + (Math.random() - 0.3) * 6, cz + (Math.random() - 0.5) * 30);
+      q.setFromEuler(new THREE.Euler(Math.random(), Math.random() * 3, Math.random())); sc.set(s * 1.4, s * 0.62, s);
+      inst.setMatrixAt(k, m4.compose(v, q, sc));
+    }
+  }
+  scene.add(inst);
+}
+const plane = new THREE.Group(); scene.add(plane);
+{
+  const cream = lam(0xE4DCCB), dark = lam(0x2A3046);
+  const fus = new THREE.Mesh(new THREE.CylinderGeometry(0.95, 0.95, 12, 12).rotateX(Math.PI / 2), cream); plane.add(fus);
+  const nose = new THREE.Mesh(new THREE.SphereGeometry(0.95, 12, 8), cream); nose.scale.z = 1.9; nose.position.z = -6; plane.add(nose);
+  const tail = new THREE.Mesh(new THREE.ConeGeometry(0.95, 4, 12).rotateX(Math.PI / 2), cream); tail.position.set(0, 0.2, 8); tail.scale.y = 0.8; plane.add(tail);
+  const ws = new THREE.Shape(); ws.moveTo(0, 0); ws.lineTo(8.6, 2.4); ws.lineTo(8.6, 3.4); ws.lineTo(0, 2.6); ws.closePath();
+  [-1, 1].forEach(side => {
+    const g = new THREE.ExtrudeGeometry(ws, { depth: 0.16, bevelEnabled: false }); g.rotateX(Math.PI / 2);
+    const w = new THREE.Mesh(g, cream); w.scale.x = side; w.position.set(0, -0.35, -1.6); plane.add(w);
+    const eng = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.36, 2.0, 10).rotateX(Math.PI / 2), dark); eng.position.set(side * 3.4, -0.85, -1.0); plane.add(eng);
+    const nav = glow(side < 0 ? 0xFF5A6E : 0x6CFFB0, 1.8); nav.position.set(side * 8.6, -0.3, 1.2); plane.add(nav);
+    const strip = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.16, 8.2), basic(0xFFD79A)); strip.position.set(side * 0.95, 0.22, -0.4); plane.add(strip);
+  });
+  const fin = new THREE.Shape(); fin.moveTo(0, 0); fin.lineTo(2.6, 0); fin.lineTo(2.9, 2.8); fin.lineTo(2.0, 2.8); fin.closePath();
+  const fg = new THREE.ExtrudeGeometry(fin, { depth: 0.14, bevelEnabled: false }); fg.rotateY(-Math.PI / 2);
+  const f = new THREE.Mesh(fg, lam(COL.rose)); f.position.set(-0.07, 0.6, 7.0); plane.add(f);
+  const stab = new THREE.Mesh(new THREE.BoxGeometry(5.2, 0.12, 1.3), cream); stab.position.set(0, 0.35, 8.6); plane.add(stab);
+  const strobe = glow(0xFFFFFF, 1.4); strobe.position.set(0, 3.5, 9.5); plane.add(strobe);
+}
+
+/* ---------- the story timeline (T): 0 gate, 1 Egypt, 2-5 the drive, 5-7 On the move ---------- */
+const carZ = T => { const u = clamp(T - 2, 0, 3.4); return u < 0.5 ? -140 * u * u : -140 * (u - 0.25); };
+const planeY = 202;
+const planeZ = T => -400 - 62 * Math.max(0, T - 4.0);
+const V = new THREE.Vector3();
+const shot = { pos: new THREE.Vector3(), look: new THREE.Vector3(), up: new THREE.Vector3(0, 1, 0) };
+
+const DESK_UP = new THREE.Vector3(0.55, 0, -0.84).normalize();
+function cameraAt(T) {
+  const cz = carZ(T), C = new THREE.Vector3(0, 0, cz);
+  const P = new THREE.Vector3(0, planeY, planeZ(T));
+  const orbit = (a, r, h, lookY = 1.0) => ({ pos: new THREE.Vector3(Math.sin(a) * r, h, cz + Math.cos(a) * r), look: new THREE.Vector3(0, lookY, cz) });
+  const gate = t => PHONE ? orbit(lerp(-2.62, -2.42, t), lerp(10, 12.5, t), lerp(1.8, 2.0, t), lerp(1.6, 1.0, t)) : orbit(lerp(-2.6, -2.42, t), lerp(12.5, 9.5, t), lerp(1.7, 1.5, t));
+  const egypt = t => { const e = smooth(0, 1, t); return PHONE ? orbit(lerp(-2.42, 0, e), lerp(12.5, 11, e), lerp(2.0, 4.2, e), lerp(1.0, 0.6, e)) : orbit(lerp(-2.42, 0, e), lerp(9.5, 8.6, e) + Math.sin(e * Math.PI) * 3, lerp(1.5, 2.6, e) + Math.sin(e * Math.PI) * 0.8); };
+  const chase = t => {
+    const sway = Math.sin(t * 2.2) * (PHONE ? 0.6 : 1.2);
+    return PHONE
+      ? { pos: new THREE.Vector3(sway, lerp(4.2, 5.6, t), cz + lerp(11, 12, t)), look: new THREE.Vector3(0, lerp(0.6, 0, t), cz - lerp(0, 14, t)) }
+      : { pos: new THREE.Vector3(sway, lerp(2.6, 3.0, t), cz + lerp(8.6, 9.6, t)), look: new THREE.Vector3(0, 1.0, cz - lerp(0, 7, t)) };
+  };
+  const bird = () => PHONE
+    ? { pos: new THREE.Vector3(0, 125, cz + 14), look: new THREE.Vector3(0, 0, cz - 22) }
+    : { pos: new THREE.Vector3(0, 108, cz + 10), look: new THREE.Vector3(0, 0, cz - 6) };
+  const air = t => {
+    const swing = Math.sin(t * 1.4) * 2.5;
+    return PHONE
+      ? { pos: new THREE.Vector3(P.x + 5 + swing, P.y + 6.5, P.z + 30), look: new THREE.Vector3(P.x, P.y - 2.5, P.z - 14) }
+      : { pos: new THREE.Vector3(P.x + 11 + swing, P.y + 3.4, P.z + 25), look: new THREE.Vector3(P.x - 2, P.y + 0.6, P.z - 16) };
+  };
+  let a, b, w = 0, up = 0;
+  if (T < 1) a = gate(T);
+  else if (T < 2) a = egypt(T - 1);
+  else if (T < 3) a = chase(T - 2);
+  else if (T < 4) { a = chase(1); b = bird(); w = smooth(3, 4, T); up = PHONE ? 0 : smooth(3.2, 3.9, T); }
+  else if (T < 5) { a = bird(); b = air(0); w = smooth(4, 5, T); up = PHONE ? 0 : 1 - smooth(4.1, 4.6, T); }
+  else a = air(T - 5);
+  shot.pos.copy(a.pos); shot.look.copy(a.look);
+  if (b) { shot.pos.lerp(b.pos, w); shot.look.lerp(b.look, w); }
+  // rising through the cloud deck: arc the climb so the camera passes the deck, not the plane
+  shot.up.set(0, 1, 0).lerp(DESK_UP, up).normalize();
+  return shot;
+}
+const viewAt = T => T < 3.45 ? 0 : T < 4.55 ? 1 : 2;
+
+/* ---------- DOM: HUD driven by T ---------- */
+const sections = [...document.querySelectorAll('main > section[data-t]')];
+const el = {
+  gate: $('#gateCard'), egypt: $('#cardEgypt'), move: $('#cardMove'), np: $('#np'), cp: $('#cp'),
+  wash: $('#wash'), cut: $('#cut'), views: [...document.querySelectorAll('.views [data-v]')],
+  mapFill: $('.map-fill'), mapCar: $('.map-car'), stopNo: $('#stopNo'), stopName: $('#stopName'), map: $('.map'),
+  eq: [...document.querySelectorAll('.eq i')], legs: [...document.querySelectorAll('.route .leg')], cities: [...document.querySelectorAll('.route .city')],
+  hop: $('#hopName'), hopLeg: $('#hopLeg'), jet: $('.route .jet'), work: $('#work'), header: $('.top'), scrim: $('.scrim-a'),
+};
+const CITIES = ['Saudi', 'Abu Dhabi', 'Oman', 'Dubai'];
+function readT() {
+  const y = scrollY;
+  for (let i = sections.length - 1; i >= 0; i--) {
+    const s = sections[i], top = s.offsetTop;
+    if (y >= top) return clamp(+s.dataset.t + (y - top) / s.offsetHeight, 0, 7.5);
+  }
+  return 0;
+}
+function show(node, o, lift = 14) {
+  if (!node) return;
+  node.style.opacity = o.toFixed(3);
+  node.style.visibility = o < 0.01 ? 'hidden' : 'visible';
+  node.style.transform = REDUCE ? '' : `translate3d(0,${((1 - o) * lift).toFixed(1)}px,0)`;
+  node.toggleAttribute('inert', o < 0.5);
+}
+let lastHop = -1;
+function hud(T, vel) {
+  show(el.gate, 1 - smooth(0.22, 0.6, T), -10);
+  show(el.egypt, win(T, 1.1, 1.93, 0.12));
+  const moveO = win(T, 5.04, 6.98, 0.14); show(el.move, moveO);
+  show(el.np, win(T, 2.04, 4.96, 0.1), 8);
+  el.wash.style.opacity = (REDUCE ? 0 : Math.exp(-Math.pow((T - 4.48) / 0.13, 2)) * 0.92).toFixed(3);
+  const v = viewAt(T); el.views.forEach((n, i) => n.classList.toggle('on', i === v));
+  el.header.style.setProperty('--gate', (1 - smooth(0.22, 0.6, T)).toFixed(3));
+  el.header.classList.toggle('gated', T < 0.45);
+  el.scrim.style.opacity = Math.max(1 - smooth(0.22, 0.6, T), win(T, 1.05, 1.98, 0.15), win(T, 5.0, 7.0, 0.15)).toFixed(3);
+  // living map: stop 1 (Egypt) -> the drive -> stop 2 (On the move)
+  const f = T < 2 ? 0 : T < 5 ? smooth(2, 5, T) : 1;
+  el.mapFill.style.transform = `scaleX(${(f * 0.1).toFixed(4)})`;
+  el.mapCar.style.left = (f * 10).toFixed(3) + '%';
+  show(el.map, smooth(0.5, 0.85, T), 0);
+  const [no, name] = T < 2 ? ['stop 1 of 11', 'Egypt'] : T < 5 ? ['on the road', 'Egypt to the Gulf'] : ['stop 2 of 11', 'On the move'];
+  if (el.stopNo.textContent !== no) { el.stopNo.textContent = no; el.stopName.textContent = name; }
+  // the song chip's bars move only while you drive (scroll)
+  el.eq.forEach((b, i) => { b.style.transform = `scaleY(${(0.25 + Math.min(1, vel * 40) * (0.5 + 0.5 * Math.sin(T * 40 + i * 1.9))).toFixed(3)})`; });
+  // stop 2 hops
+  const k = clamp((T - 5.12) / 1.2);
+  el.legs.forEach((p, i) => { p.style.strokeDashoffset = (1 - clamp(k * 3 - i)).toFixed(4); });
+  const hop = Math.min(3, Math.floor(k * 3 + 0.02));
+  if (hop !== lastHop) {
+    lastHop = hop; el.hop.textContent = CITIES[hop];
+    el.hopLeg.textContent = hop === 0 ? 'first stop, age six' : `${CITIES[hop - 1]} to ${CITIES[hop]}`;
+    el.cities.forEach((c, i) => { c.classList.toggle('on', i === hop); c.classList.toggle('been', i < hop); });
+  }
+  if (el.jet && el.legs.length) {
+    const leg = Math.min(2, Math.floor(k * 3)), lp = el.legs[leg], lt = clamp(k * 3 - leg), len = lp.getTotalLength();
+    const p0 = lp.getPointAtLength(lt * len), p1 = lp.getPointAtLength(Math.min(len, lt * len + 1));
+    const ang = Math.atan2(p1.y - p0.y, p1.x - p0.x) * 180 / Math.PI;
+    el.jet.setAttribute('transform', `translate(${p0.x.toFixed(1)} ${p0.y.toFixed(1)}) rotate(${(lt >= 1 && leg === 2 ? ang : ang).toFixed(1)})`);
+  }
+}
+
+/* ---------- frame loop: renders only while the scroll is settling (no idle looping) ---------- */
+let Tt = readT(), Tc = REDUCE ? Tt : Tt, vel = 0, lastY = scrollY, running = false, last = performance.now(), shown = -1;
+const SHOTS = [0, 1.5, 2.6, 3.95, 5.3, 6.4];
+const tmp = new THREE.Vector3();
+function sceneFor(T) {
+  const cz = carZ(T);
+  car.position.set(0, 0, cz);
+  const h = camera.position.y;
+  car.userData.bigGlow.material.opacity = smooth(20, 90, h) * 0.9 * (1 - smooth(140, 175, h));
+  car.userData.bigGlow.scale.setScalar(lerp(6, 16, smooth(20, 100, h)));
+  const tl = Math.max(0, 6 - cz - 2.4); trail.scale.set(1 + smooth(10, 100, h) * 1.4, 1, tl);
+  trail.material.opacity = 0.1 + smooth(15, 80, h) * 0.38;
+  plane.position.set(0, planeY + Math.sin(T * 2) * 0.4, planeZ(T));
+  plane.rotation.z = T > 5 ? Math.sin((T - 5.12) * Math.PI * 2.5) * 0.16 * (T < 6.4 ? 1 : 0.4) : 0;
+  plane.rotation.x = -smooth(4.0, 4.6, T) * 0.04;
+  plane.visible = h > 120;
+  // fog thins with altitude, then turns to the paler air above the cloud deck
+  fog.density = h < 150 ? lerp(0.0065, 0.0021, smooth(4, 100, h)) : lerp(0.0021, 0.0011, smooth(150, 190, h));
+  fog.color.setHex(h > 165 ? 0x26335A : 0x1A2440);
+}
+function render(T) {
+  if (!renderer) return;
+  const s = cameraAt(T);
+  camera.position.copy(s.pos); camera.up.copy(s.up); camera.lookAt(s.look);
+  skyGroup.position.copy(camera.position);
+  sceneFor(T);
+  // keep the subject clear of the text: shift the frame right of a left text column (desktop) or up above the bottom text (phone)
+  const W = innerWidth, H = innerHeight;
+  const textSide = Math.max(1 - smooth(0.22, 0.6, Tc), win(Tc, 1.1, 1.93, 0.25), win(Tc, 5.04, 6.98, 0.25));
+  if (PHONE) camera.setViewOffset(W, H, 0, H * 0.2 * win(Tc, 1.05, 1.95, 0.3) + H * 0.16 * win(Tc, 5.0, 7.0, 0.3), W, H);
+  else camera.setViewOffset(W, H, -W * 0.17 * textSide, 0, W, H);
+  renderer.render(scene, camera);
+  // checkpoint label follows the place of grace on screen
+  tmp.copy(GRACE).setY(3.2).project(camera);
+  const o = win(T, 2.5, 3.08, 0.1) * (tmp.z < 1 ? 1 : 0);
+  show(el.cp, o, 6);
+  if (o > 0) { const half = (el.cp.firstElementChild.offsetWidth || 160) / 2 + 16; el.cp.style.left = clamp((tmp.x * 0.5 + 0.5) * W, half, W - half).toFixed(0) + 'px'; el.cp.style.top = clamp((-tmp.y * 0.5 + 0.5) * H, 200, H - 40).toFixed(0) + 'px'; }
+}
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  if (REDUCE) {
+    // no travel: the camera cuts between still shots, covered by a short fade
+    Tc = Tt;
+    const sh = SHOTS.reduce((acc, s) => (Tt >= s ? s : acc), 0);
+    if (sh !== shown) {
+      el.cut.style.transition = 'none'; el.cut.style.opacity = '1'; void el.cut.offsetWidth;
+      shown = sh; render(sh);
+      el.cut.style.transition = 'opacity .35s ease-out'; el.cut.style.opacity = '0';
+    }
+    hud(Tt, 0); running = false; return;
+  }
+  Tc += (Tt - Tc) * (1 - Math.exp(-dt * 7));
+  if (Math.abs(Tt - Tc) < 0.0004) Tc = Tt;
+  vel += ((Math.abs(Tt - Tc)) - vel) * 0.3;
+  render(Tc); hud(Tc, vel);
+  if (Tc !== Tt || vel > 0.0005) requestAnimationFrame(frame); else { running = false; hud(Tc, 0); }
+}
+function wake() { if (!running) { running = true; last = performance.now(); requestAnimationFrame(frame); } }
+function resize() {
+  if (renderer) renderer.setSize(innerWidth, innerHeight, false);
+  camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+  shown = -1; Tt = readT(); if (!running) { render(REDUCE ? SHOTS.reduce((a, s) => (Tt >= s ? s : a), 0) : Tc); hud(Tc, 0); } wake();
+}
+addEventListener('scroll', () => { Tt = readT(); wake(); }, { passive: true });
+addEventListener('resize', resize);
+// in-page links scroll inside this document (works inside an iframe too)
+document.querySelectorAll('a[href^="#"]').forEach(a => a.addEventListener('click', e => {
+  const t = document.getElementById(a.getAttribute('href').slice(1)); if (!t) return;
+  e.preventDefault(); scrollTo({ top: t.offsetTop + (a.dataset.offset ? innerHeight * +a.dataset.offset : 0), behavior: REDUCE ? 'auto' : 'smooth' });
+}));
+resize(); Tc = Tt; render(Tc); hud(Tc, 0);
+document.documentElement.classList.add('ready');
+
+</script>
+</body>
+</html>

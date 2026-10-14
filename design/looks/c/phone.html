@@ -1,0 +1,820 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Scrapbook atlas, phone</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --desk:#3B2A1F; --paper:#EBDFC4; --paper-hi:#F7F2E6; --ink:#22304A; --marker:#C2462E; --sea:#9FBFC2; --tape:#E6C977;
+  --hand:'Kalam', 'Comic Sans MS', cursive; --serif:'Newsreader', Georgia, serif;
+  --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .27 0 0 0 0 .16 0 0 0 .2 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+*{box-sizing:border-box;margin:0}
+html{background:var(--desk);-webkit-text-size-adjust:100%}
+body{background:var(--desk);color:var(--ink);font-family:var(--serif);overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+::selection{background:var(--tape);color:var(--ink)}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+:focus-visible{outline:2px dashed var(--marker);outline-offset:4px;border-radius:4px}
+.journey{position:relative;height:1300vh}
+.stage{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;
+  background:
+   radial-gradient(120% 90% at 50% 40%, transparent 55%, rgba(0,0,0,.42) 100%),
+   var(--grain),
+   repeating-linear-gradient(91deg, rgba(0,0,0,.07) 0 2px, transparent 2px 11px, rgba(255,220,180,.03) 11px 13px, transparent 13px 23px),
+   linear-gradient(180deg,#45321F,#3B2A1F 60%,#33241A);}
+.abs{position:absolute;left:0;top:0}
+.paper{background-color:var(--paper);background-image:var(--grain)}
+
+/* desk props */
+.props{position:absolute;inset:0;pointer-events:none}
+.props svg{position:absolute}
+
+/* gate cover */
+.cover{position:absolute;z-index:7;padding:44px 48px 40px;width:540px;transform-origin:30% 60%;
+  box-shadow:0 2px 0 rgba(0,0,0,.08),0 22px 40px -12px rgba(0,0,0,.55);border-radius:3px}
+.cover .kick{font-family:var(--hand);font-size:20px;color:var(--marker);transform:rotate(-2deg);display:inline-block}
+.cover h1{font-weight:500;font-size:92px;line-height:.95;letter-spacing:-.025em;margin:10px 0 18px}
+.cover .line{font-size:22px;line-height:1.45;max-width:24em;color:#33405A}
+.cover .acts{display:flex;align-items:center;gap:22px;margin-top:30px;flex-wrap:wrap}
+.btn-go{position:relative;background:var(--ink);color:var(--paper-hi);font-weight:600;font-size:19px;padding:15px 30px 15px 28px;min-height:52px;
+  -webkit-mask:radial-gradient(circle at 0 50%,transparent 9px,#000 9.5px) left/51% 100% no-repeat,radial-gradient(circle at 100% 50%,transparent 9px,#000 9.5px) right/51% 100% no-repeat;
+          mask:radial-gradient(circle at 0 50%,transparent 9px,#000 9.5px) left/51% 100% no-repeat,radial-gradient(circle at 100% 50%,transparent 9px,#000 9.5px) right/51% 100% no-repeat;
+  transition:transform .18s cubic-bezier(.2,.8,.2,1),background-color .18s}
+.btn-go:hover{background:#2D3D5E;transform:translateY(-2px) rotate(-1deg)}
+.btn-go:active{transform:translateY(0) scale(.98)}
+.btn-skip{font-size:18px;min-height:48px;padding:0 4px;text-decoration:underline;text-decoration-color:var(--marker);text-underline-offset:6px;text-decoration-thickness:2px}
+.btn-skip:hover{color:var(--marker)}
+.cover .warn{font-family:var(--hand);font-size:17px;color:#5B5340;margin-top:12px;display:flex;gap:8px;align-items:flex-start}
+.cover .warn svg{flex:none;margin-top:2px}
+.hint{position:absolute;z-index:9;left:50%;bottom:22px;transform:translateX(-50%);font-family:var(--hand);font-size:19px;color:var(--paper);display:flex;flex-direction:column;align-items:center;gap:2px;pointer-events:none}
+
+/* snap = polaroid that becomes a chapter */
+.snap{position:absolute;inset:0;z-index:6;pointer-events:none;filter:drop-shadow(0 16px 18px rgba(0,0,0,.42))}
+.snap .frame{position:absolute;inset:0;background-image:var(--grain)}
+.snap .ph{position:absolute;left:0;top:0;width:400px;height:500px;transform-origin:0 0}
+.snap .ph .img{position:absolute;inset:0;overflow:hidden;background:#B9A27A}
+.snap .ph .img svg{width:100%;height:100%;display:block}
+.tape{position:absolute;width:140px;height:40px;background:var(--tape);opacity:.82;mix-blend-mode:multiply;
+  -webkit-mask:linear-gradient(90deg,transparent 0 3px,#000 3px calc(100% - 3px),transparent 0);
+  box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.snap .ph .tape{left:130px;top:-18px;transform:rotate(-4deg)}
+.snap .cap{position:absolute;left:0;top:0;transform-origin:0 0;font-family:var(--hand);font-size:26px;white-space:nowrap;color:var(--ink)}
+.sheet{position:absolute;transform-origin:50% 50%;display:grid;grid-template-columns:var(--slot,420px) 1fr;padding:56px 60px 48px 0;color:var(--ink)}
+.sheet .txt{position:relative;display:flex;flex-direction:column;justify-content:center;padding-right:70px}
+.stopno{font-family:var(--hand);font-size:22px;color:var(--marker);display:inline-flex;align-items:center;gap:10px}
+.stopno i{font-style:normal;display:inline-grid;place-items:center;width:40px;height:40px;border:2.5px solid var(--marker);border-radius:50% 46% 52% 48%;font-weight:700;transform:rotate(-6deg)}
+.sheet h2{font-weight:500;font-size:112px;letter-spacing:-.03em;line-height:.92;margin:14px 0 22px;text-wrap:balance}
+.sheet .body{font-size:22px;line-height:1.55;max-width:30ch;color:#2A374F}
+.sheet .note{font-family:var(--hand);font-size:21px;color:var(--marker);margin-top:22px;display:flex;align-items:center;gap:8px;transform:rotate(-1.5deg);transform-origin:left}
+.plaque{position:absolute;right:-20px;top:4px;writing-mode:vertical-rl;transform:rotate(180deg);border:1.5px solid var(--ink);padding:14px 7px;font-size:15px;letter-spacing:.06em;display:flex;gap:10px;align-items:center}
+.plaque b{font-weight:600}
+
+/* accordion (folding paper) */
+.accw{position:absolute;left:0;top:0;perspective:2000px;perspective-origin:50% 40%}
+.acc{position:relative;transform-style:preserve-3d}
+.panel{position:absolute;left:0;top:0;background-color:var(--paper);background-image:var(--grain);overflow:hidden;backface-visibility:hidden}
+.panel svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.panel .shade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(40,25,10,.5),rgba(40,25,10,.12));opacity:0}
+.accw.y .panel .shade{background:linear-gradient(180deg,rgba(40,25,10,.5),rgba(40,25,10,.12))}
+.panel .crease{position:absolute;inset:0;box-shadow:inset 1px 0 0 rgba(60,40,20,.18),inset -1px 0 0 rgba(255,255,255,.25)}
+.accw.y .panel .crease{box-shadow:inset 0 1px 0 rgba(60,40,20,.18),inset 0 -1px 0 rgba(255,255,255,.25)}
+.accw .shadow{position:absolute;left:0;top:0;background:rgba(0,0,0,.35);filter:blur(14px);transform-origin:0 0}
+.overlay{position:absolute;left:0;top:0;overflow:visible;pointer-events:none}
+#stripW{z-index:2} #mapW{z-index:3}
+.tag{position:absolute;z-index:8;font-family:var(--hand);font-size:22px;color:var(--ink);background:var(--tape);padding:4px 16px 2px;transform:rotate(-2deg);box-shadow:0 2px 6px rgba(0,0,0,.25);white-space:nowrap;pointer-events:none}
+
+/* airplane window card */
+.wcard{position:absolute;z-index:4;width:470px;height:600px;border-radius:6px;box-shadow:0 2px 0 rgba(0,0,0,.06),0 26px 44px -14px rgba(0,0,0,.6);transform-origin:50% 0}
+.pane{position:absolute;overflow:hidden;border-radius:46%/38%;background:#cfe0e3;perspective:640px;perspective-origin:50% 55%;
+  box-shadow:0 0 0 14px #E4DAC2,0 0 0 16px rgba(34,48,74,.55),inset 0 0 0 2px rgba(34,48,74,.6),inset 0 10px 30px rgba(0,0,0,.35)}
+.pane .ground{position:absolute;left:0;top:0;transform-style:flat}
+.pane .ground svg{display:block}
+.pane .sky{position:absolute;inset:0;background:linear-gradient(180deg,#E9F1F1 0%,rgba(222,236,238,.85) 16%,rgba(222,236,238,0) 38%);pointer-events:none}
+.pane .cloud{position:absolute;left:0;top:0;width:220px;height:90px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,255,255,.95),rgba(255,255,255,.55) 55%,rgba(255,255,255,0));pointer-events:none}
+.pane .plane{position:absolute;left:0;top:0;width:64px;height:64px;margin:-32px 0 0 -32px}
+.pane .blind{position:absolute;inset:-2px;background:#E9E1CD;background-image:repeating-linear-gradient(180deg,rgba(34,48,74,.08) 0 1px,transparent 1px 18px),var(--grain);border-bottom:3px solid rgba(34,48,74,.5)}
+.pane .blind::after{content:"";position:absolute;left:50%;bottom:10px;width:46px;height:10px;margin-left:-23px;border-radius:6px;background:rgba(34,48,74,.45)}
+.wcap{position:absolute;left:0;right:0;text-align:center}
+.wcap .h{font-family:var(--hand);font-size:26px;color:var(--marker)}
+.wcap .s{font-size:18px;color:#33405A;margin-top:2px}
+.stub{position:absolute;z-index:5;width:230px;height:92px;padding:12px 18px 10px 26px;color:var(--ink);
+  -webkit-mask:radial-gradient(circle at 0 50%,transparent 10px,#000 10.5px);mask:radial-gradient(circle at 0 50%,transparent 10px,#000 10.5px);
+  border-right:2px dashed rgba(34,48,74,.35);box-shadow:0 10px 18px -8px rgba(0,0,0,.5)}
+.stub small{display:block;font-family:var(--hand);font-size:15px;color:#5B5340}
+.stub b{display:block;font-weight:500;font-size:26px;letter-spacing:-.01em;line-height:1.1}
+.stub .stamp{position:absolute;right:12px;top:14px;font-family:var(--hand);font-weight:700;font-size:14px;color:var(--marker);border:2px solid var(--marker);border-radius:50%;width:60px;height:60px;display:grid;place-items:center;transform:rotate(-14deg);opacity:0;mix-blend-mode:multiply}
+
+/* now playing + route ruler */
+.chip{position:absolute;z-index:9;display:flex;align-items:center;gap:12px;padding:10px 20px 8px 14px;background:var(--tape);color:var(--ink);transform:rotate(1.5deg);box-shadow:0 4px 10px rgba(0,0,0,.3);pointer-events:none;opacity:0}
+.chip .k{font-family:var(--hand);font-size:15px;line-height:1;opacity:.85}
+.chip .t{font-style:italic;font-size:19px;line-height:1.15}
+.chip .eq{display:flex;gap:3px;align-items:flex-end;height:20px}
+.chip .eq span{width:4px;background:var(--marker);height:8px;transform-origin:bottom}
+.ruler{position:absolute;z-index:9;left:28px;bottom:22px;padding:8px 16px 8px;color:var(--ink);transform:rotate(-1deg);box-shadow:0 6px 14px -4px rgba(0,0,0,.5);pointer-events:none;opacity:0}
+.ruler .lab{font-family:var(--hand);font-size:16px;line-height:1.2}
+.ruler svg{display:block;margin-top:4px}
+
+/* the work (skip target) */
+.work{min-height:100vh;display:grid;place-items:center;padding:80px 16px;background:linear-gradient(180deg,#33241A,#3B2A1F)}
+.work .card{max-width:640px;width:100%;padding:52px 52px 44px;transform:rotate(.8deg);box-shadow:0 26px 44px -14px rgba(0,0,0,.6)}
+.work h2{font-weight:500;font-size:64px;letter-spacing:-.02em;line-height:1}
+.work p{font-size:20px;line-height:1.5;margin-top:16px;max-width:34ch}
+.work .hand{font-family:var(--hand);color:var(--marker);font-size:19px}
+.work button{margin-top:26px;min-height:48px;font-size:18px;text-decoration:underline;text-decoration-color:var(--marker);text-underline-offset:6px;text-decoration-thickness:2px}
+.warming #stripW,.warming #mapW,.warming #wcard,.warming .stub,.warming #p2,.warming .chip,.warming .tag,.warming .ruler{visibility:visible!important;opacity:.002!important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---------- phone composition ---------- */
+.is-phone .journey{height:1400vh}
+.is-phone .cover{left:16px;right:16px;bottom:24px;width:auto;padding:24px 22px 20px}
+.is-phone .cover .kick{font-size:17px}
+.is-phone .cover h1{font-size:50px;margin:4px 0 10px}
+.is-phone .cover .line{font-size:17px}
+.is-phone .cover .acts{flex-direction:column;align-items:stretch;gap:6px;margin-top:18px}
+.is-phone .btn-go{font-size:18px;min-height:54px;text-align:center}
+.is-phone .btn-skip{font-size:17px;min-height:46px}
+.is-phone .cover .warn{font-size:16px;margin-top:2px;justify-content:center}
+.is-phone .sheet{grid-template-columns:1fr;grid-template-rows:var(--slot,320px) 1fr;padding:0 24px 22px}
+.is-phone .sheet .txt{justify-content:flex-start;padding-right:0}
+.is-phone .sheet h2{font-size:58px;margin:6px 0 12px}
+.is-phone .sheet .body{font-size:18px;line-height:1.55}
+.is-phone .sheet .note{font-size:18px;margin-top:14px}
+.is-phone .stopno{font-size:19px}
+.is-phone .stopno i{width:36px;height:36px}
+.is-phone .plaque{position:absolute;right:0;top:6px;writing-mode:horizontal-tb;transform:rotate(2deg);padding:5px 10px;font-size:13px}
+.is-phone .wcard{width:358px;height:540px}
+.is-phone .wcap .h{font-size:23px}
+.is-phone .wcap .s{font-size:16px}
+.is-phone .stub{width:174px;height:68px;padding:8px 10px 6px 20px}
+.is-phone .stub b{font-size:20px}
+.is-phone .stub small{font-size:13px}
+.is-phone .stub .stamp{width:46px;height:46px;font-size:12px;right:6px;top:10px}
+.is-phone .chip{padding:9px 18px 7px 12px}
+.is-phone .ruler{left:16px;right:16px;top:14px;bottom:auto;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 12px}
+.is-phone .ruler .lab{font-size:15px;white-space:nowrap}
+.is-phone .hint{display:none}
+.is-phone .ruler svg{width:150px;height:14px}
+.is-phone .ruler svg{margin-top:0}
+.is-phone .tag{font-size:19px}
+.is-phone .work .card{padding:34px 24px 28px}
+.is-phone .work h2{font-size:48px}
+.is-phone .work p{font-size:18px}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <pattern id="seaHatch" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(-35)">
+      <line x1="0" y1="0" x2="0" y2="16" stroke="#6F979B" stroke-width="1.2" opacity=".45"/>
+    </pattern>
+    <clipPath id="mapClip"><rect x="0" y="0" width="1800" height="1000"/></clipPath>
+
+    <!-- Seif, big-head caricature (stand-in drawing) -->
+    <g id="seifHead">
+      <circle cx="60" cy="54" r="8.5" fill="#C68E62" stroke="#22304A" stroke-width="2.5"/>
+      <circle cx="140" cy="54" r="8.5" fill="#C68E62" stroke="#22304A" stroke-width="2.5"/>
+      <ellipse cx="100" cy="50" rx="41" ry="43" fill="#C68E62" stroke="#22304A" stroke-width="3"/>
+      <path d="M59 46 Q54 8 98 6 Q146 6 142 46 Q137 30 122 30 Q112 18 100 26 Q86 18 76 30 Q64 30 59 46Z" fill="#2A1E18" stroke="#22304A" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M80 42 Q87 38 94 42 M106 42 Q113 38 120 42" stroke="#2A1E18" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+      <circle cx="88" cy="52" r="4.6" fill="#22304A"/><circle cx="113" cy="52" r="4.6" fill="#22304A"/>
+      <circle cx="89.6" cy="50.6" r="1.4" fill="#fff"/><circle cx="114.6" cy="50.6" r="1.4" fill="#fff"/>
+      <path d="M100 56 Q97 64 101 65" stroke="#22304A" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M84 70 Q100 86 117 70 Z" fill="#fff" stroke="#22304A" stroke-width="2.6" stroke-linejoin="round"/>
+      <circle cx="76" cy="66" r="6" fill="#C2462E" opacity=".25"/><circle cx="125" cy="66" r="6" fill="#C2462E" opacity=".25"/>
+    </g>
+
+    <!-- road strip (3120 x 300) -->
+    <g id="stripArt" font-family="Kalam, cursive" fill="none" stroke="#22304A" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="6" y="6" width="3108" height="288" stroke-width="1.5" opacity=".35"/>
+      <path d="M0 252 L3120 252" stroke-width="2.5"/>
+      <rect x="0" y="212" width="3120" height="40" fill="#D9CCAE" stroke="none"/>
+      <path d="M0 212 L3120 212" stroke-width="2.8"/>
+      <path d="M0 232 L3120 232" stroke-width="2" stroke-dasharray="18 16" opacity=".7"/>
+      <path d="M0 252 L3120 252" stroke-width="2.8"/>
+      <!-- stop 1 sign -->
+      <path d="M90 212 L90 120" stroke-width="3"/>
+      <rect x="22" y="80" width="148" height="48" fill="#F7F2E6" stroke-width="2.6" transform="rotate(-2 96 104)"/>
+      <text x="96" y="114" font-size="30" text-anchor="middle" fill="#22304A" stroke="none">Cairo</text>
+      <circle cx="196" cy="70" r="20" stroke="#C2462E" stroke-width="2.6"/>
+      <text x="196" y="80" font-size="24" text-anchor="middle" fill="#C2462E" stroke="none" font-weight="700">1</text>
+      <!-- Nile + felucca -->
+      <path d="M200 196 q30 -8 60 0 t60 0 t60 0 t60 0 t60 0" stroke="#5E8F94" stroke-width="2.4"/>
+      <path d="M220 186 q30 -8 60 0 t60 0 t60 0 t60 0" stroke="#5E8F94" stroke-width="1.6" opacity=".6"/>
+      <path d="M352 190 L404 190 L396 200 L360 200 Z" fill="#F7F2E6" stroke-width="2.2"/>
+      <path d="M378 190 L378 118 L414 184 Z" fill="#F7F2E6" stroke-width="2.2"/>
+      <!-- palms -->
+      <g stroke-width="2.4">
+        <path d="M262 212 Q258 160 270 128" /><path d="M270 128 q-30 -6 -46 10 M270 128 q-14 -24 -40 -22 M270 128 q10 -26 34 -26 M270 128 q30 -4 42 16 M270 128 q4 -30 -6 -40"/>
+        <path d="M486 212 Q490 170 478 142" /><path d="M478 142 q-26 -4 -40 10 M478 142 q-10 -22 -34 -20 M478 142 q8 -22 30 -22 M478 142 q26 -2 36 14"/>
+      </g>
+      <!-- pyramids -->
+      <path d="M560 212 L690 84 L820 212" fill="#E3D2A6" stroke-width="2.6"/>
+      <path d="M690 84 L720 212 M700 110 l70 0 M712 136 l64 0 M720 162 l78 0 M726 188 l84 0" stroke-width="1.5" opacity=".55"/>
+      <path d="M780 212 L860 132 L940 212" fill="#E3D2A6" stroke-width="2.4"/>
+      <path d="M860 132 L878 212 M872 160 l42 0 M878 186 l50 0" stroke-width="1.4" opacity=".55"/>
+      <!-- sun -->
+      <circle cx="1120" cy="74" r="34" fill="#E6C977" stroke-width="2.4"/>
+      <path d="M1120 22 l0 -12 M1120 126 l0 12 M1068 74 l-12 0 M1172 74 l12 0 M1083 37 l-9 -9 M1157 111 l9 9 M1157 37 l9 -9 M1083 111 l-9 9" stroke-width="2.4"/>
+      <!-- dunes -->
+      <path d="M960 212 q70 -46 150 -14 q60 -40 140 -6 q50 -26 120 4" stroke-width="2.2"/>
+      <path d="M1020 212 q50 -22 100 -4 M1200 210 q40 -16 90 0" stroke-width="1.6" opacity=".55"/>
+      <!-- checkpoint: an alien-watch nod (original drawing) -->
+      <path d="M1560 212 L1560 168" stroke-width="3"/>
+      <rect x="1530" y="22" width="60" height="150" rx="18" fill="#56664E" stroke-width="2.6"/>
+      <path d="M1540 40 l40 0 M1540 152 l40 0" stroke="#F7F2E6" stroke-width="2" opacity=".5"/>
+      <circle cx="1560" cy="96" r="46" fill="#C9C2B0" stroke-width="2.8"/>
+      <circle cx="1560" cy="96" r="36" fill="#7CCB5B" stroke-width="2.6"/>
+      <path d="M1560 66 L1576 96 L1560 126 L1544 96 Z" fill="#22304A" stroke="none"/>
+      <path d="M1560 74 L1570 96 L1560 118 L1550 96 Z" fill="#7CCB5B" stroke="none"/>
+      <path d="M1606 84 l8 0 M1606 108 l8 0" stroke-width="3"/>
+      <circle id="stampRing" cx="1560" cy="96" r="70" stroke="#C2462E" stroke-width="3.5" stroke-dasharray="440" stroke-dashoffset="440" transform="rotate(-90 1560 96)"/>
+      <text x="1640" y="160" font-size="24" fill="#22304A" stroke="none" transform="rotate(-4 1640 160)">checkpoint</text>
+      <text id="passed" x="1640" y="190" font-size="22" fill="#C2462E" stroke="none" opacity="0" transform="rotate(-4 1640 190)">passed!</text>
+      <!-- his words on the road -->
+      <text x="1820" y="64" font-size="26" fill="#22304A" stroke="none" transform="rotate(-2 1820 64)">"there's nothing better"</text>
+      <text x="1860" y="96" font-size="20" fill="#5B5340" stroke="none" transform="rotate(-2 1860 96)">than driving with music on</text>
+      <path d="M1820 112 q40 18 90 6" stroke="#C2462E" stroke-width="2"/>
+      <!-- Sinai mountains -->
+      <path d="M2010 212 L2090 128 L2140 176 L2210 100 L2300 212" fill="#E3D2A6" stroke-width="2.4"/>
+      <path d="M2210 100 l-20 30 l14 0 l-12 22" stroke-width="1.5" opacity=".55"/>
+      <path d="M2350 212 L2350 140" stroke-width="3"/>
+      <rect x="2290" y="104" width="124" height="44" fill="#F7F2E6" stroke-width="2.4" transform="rotate(2 2350 126)"/>
+      <text x="2352" y="136" font-size="27" text-anchor="middle" fill="#22304A" stroke="none">Sinai</text>
+      <!-- sea -->
+      <g stroke="#5E8F94" stroke-width="2.2">
+        <path d="M2450 196 q20 -10 40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0"/>
+        <path d="M2480 176 q20 -10 40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0" opacity=".7"/>
+        <path d="M2520 156 q20 -10 40 0 t40 0 t40 0 t40 0 t40 0 t40 0" opacity=".45"/>
+      </g>
+      <path d="M2660 150 L2720 150 L2712 162 L2668 162 Z M2684 150 L2684 128 L2702 128 L2702 150" fill="#F7F2E6" stroke-width="2"/>
+      <text x="2620" y="80" font-size="24" fill="#5E8F94" stroke="none">Red Sea</text>
+      <!-- stop 2 sign -->
+      <path d="M2990 212 L2990 128" stroke-width="3"/>
+      <path d="M2924 86 L3070 86 L3092 110 L3070 134 L2924 134 Z" fill="#F7F2E6" stroke-width="2.6"/>
+      <text x="2996" y="120" font-size="28" text-anchor="middle" fill="#22304A" stroke="none">Saudi</text>
+      <circle cx="2900" cy="64" r="20" stroke="#C2462E" stroke-width="2.6"/>
+      <text x="2900" y="74" font-size="24" text-anchor="middle" fill="#C2462E" stroke="none" font-weight="700">2</text>
+    </g>
+
+    <!-- the region map (1800 x 1000, lon 24-60 E, lat 12-32 N) -->
+    <g id="mapArt" font-family="Kalam, cursive">
+      <g clip-path="url(#mapClip)">
+        <rect width="1800" height="1000" fill="#B9D0D1"/>
+        <rect width="1800" height="1000" fill="url(#seaHatch)"/>
+        <path id="landHalo" fill="none" stroke="#7FA6AA" stroke-width="16" opacity=".45"/>
+        <path id="land" fill="#EBDFC4" stroke="#22304A" stroke-width="2.6" stroke-linejoin="round"/>
+        <g id="grat" stroke="#22304A" stroke-width="1" opacity=".16" stroke-dasharray="4 8"></g>
+        <path id="nile" fill="none" stroke="#5E8F94" stroke-width="3" stroke-linecap="round"/>
+      </g>
+      <rect x="8" y="8" width="1784" height="984" fill="none" stroke="#22304A" stroke-width="2"/>
+      <rect x="18" y="18" width="1764" height="964" fill="none" stroke="#22304A" stroke-width="1" opacity=".5"/>
+      <g fill="#22304A" font-size="40">
+        <text x="160" y="330">Egypt</text>
+        <text x="900" y="520">Saudi Arabia</text>
+        <text x="1530" y="140" font-size="32" opacity=".7">Iran</text>
+        <text x="1615" y="610">Oman</text>
+      </g>
+      <g fill="#4E7A7F" font-size="30" font-style="italic">
+        <text x="560" y="700" transform="rotate(58 560 700)">Red Sea</text>
+        <text x="1250" y="250" transform="rotate(-24 1250 250)">The Gulf</text>
+      </g>
+      <g fill="#22304A" font-size="28">
+        <circle cx="362" cy="98" r="7"/><text x="300" y="152">Cairo</text>
+        <circle cx="1135" cy="365" r="7"/><text x="1082" y="420">Riyadh</text>
+        <circle cx="1518" cy="377" r="7"/><text x="1400" y="430">Abu Dhabi</text>
+        <circle cx="1563" cy="340" r="7"/><text x="1580" y="330">Dubai</text>
+        <circle cx="1720" cy="420" r="7"/><text x="1650" y="470">Muscat</text>
+      </g>
+      <g transform="translate(150 820)" stroke="#22304A" fill="none" stroke-width="2">
+        <circle r="54" opacity=".5"/><circle r="38" opacity=".35"/>
+        <path d="M0 -70 L12 0 L0 70 L-12 0 Z" fill="#EBDFC4"/><path d="M0 -70 L12 0 L-12 0 Z" fill="#C2462E" stroke="none"/>
+        <path d="M-70 0 L0 10 L70 0 L0 -10 Z" fill="#EBDFC4" opacity=".9"/>
+        <text y="-80" text-anchor="middle" font-size="26" fill="#22304A" stroke="none">N</text>
+      </g>
+    </g>
+  </defs>
+</svg>
+
+<main>
+<section class="journey" id="journey" aria-label="The journey, stops 1 and 2">
+  <div class="stage" id="stage">
+    <div class="props" aria-hidden="true">
+      <svg id="pencil" width="380" height="40" viewBox="0 0 380 40"><g transform="rotate(0)"><rect x="40" y="8" width="300" height="24" fill="#E3B23C" stroke="#22304A" stroke-width="2"/><path d="M40 8 L0 20 L40 32 Z" fill="#E9D3A8" stroke="#22304A" stroke-width="2"/><path d="M0 20 L12 16.5 L12 23.5 Z" fill="#22304A"/><rect x="340" y="8" width="16" height="24" fill="#B9B4A6" stroke="#22304A" stroke-width="2"/><rect x="356" y="8" width="22" height="24" rx="4" fill="#C2462E" stroke="#22304A" stroke-width="2"/><path d="M40 16 L340 16 M40 24 L340 24" stroke="#22304A" stroke-width="1" opacity=".25"/></g></svg>
+      <svg id="ring" width="190" height="190" viewBox="0 0 190 190"><circle cx="95" cy="95" r="78" fill="none" stroke="#2A1B12" stroke-width="10" opacity=".35"/><circle cx="95" cy="95" r="70" fill="none" stroke="#2A1B12" stroke-width="2" opacity=".25"/></svg>
+      <svg id="clip" width="40" height="110" viewBox="0 0 40 110"><path d="M12 100 L12 18 Q12 6 22 6 Q32 6 32 18 L32 90 Q32 100 24 100 Q18 100 18 90 L18 26" fill="none" stroke="#B8B2A4" stroke-width="3.5" stroke-linecap="round"/></svg>
+    </div>
+
+    <!-- gate -->
+    <div class="cover paper" id="cover">
+      <span class="kick">a road trip in eleven stops</span>
+      <h1>Seif Elassal</h1>
+      <p class="line">My life so far, told as a drive with music. Every stop is a chapter, every drive has its own song.</p>
+      <div class="acts">
+        <button class="btn-go" id="go">Start the journey</button>
+        <button class="btn-skip" id="skip">Skip to the work</button>
+      </div>
+      <p class="warn"><svg width="26" height="20" viewBox="0 0 26 20" aria-hidden="true"><path d="M3 3 Q4 14 20 14 M15 9 L21 14 L15 19" fill="none" stroke="#C2462E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>you can skip ahead, but you'll miss the journey</p>
+    </div>
+    <div class="hint" id="hint" aria-hidden="true">scroll to start driving
+      <svg width="22" height="30" viewBox="0 0 22 30"><path d="M11 2 Q8 14 11 26 M4 19 L11 27 L18 19" fill="none" stroke="#EBDFC4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+
+    <!-- stop 1: polaroid that becomes the chapter -->
+    <div class="snap" id="p1">
+      <div class="frame"></div>
+      <article class="sheet" aria-label="Stop 1, Egypt">
+        <div class="slot"></div>
+        <div class="txt">
+          <div class="plaque"><span>Ages</span><b>0 to 6</b></div>
+          <span class="stopno"><i>1</i>Stop 1 of 11</span>
+          <h2>Egypt</h2>
+          <p class="body">I was born in Egypt and lived there until I was six. My first day of school was at Choueifat.</p>
+          <p class="note"><svg width="30" height="22" viewBox="0 0 30 22" aria-hidden="true"><path d="M3 3 Q5 16 24 15 M18 9 L25 15 L18 21" fill="none" stroke="#C2462E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>the first of a lot of first days</p>
+        </div>
+      </article>
+      <div class="ph"><div class="img"><svg viewBox="0 0 400 500" aria-label="photo: Seif age ~5" role="img">
+<defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D9C7A0"/><stop offset=".6" stop-color="#B79D72"/><stop offset="1" stop-color="#8F7651"/></linearGradient>
+<radialGradient id="v1" cx=".5" cy=".45" r=".7"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#2a1a08" stop-opacity=".45"/></radialGradient></defs>
+<rect width="400" height="500" fill="url(#g1)"/>
+<path d="M0 360 Q120 330 220 352 T400 340 L400 500 L0 500Z" fill="#7E6646" opacity=".55"/>
+<path d="M40 360 L120 250 L200 360Z" fill="#C9B07E" stroke="#4a3a24" stroke-width="2" opacity=".7"/>
+<g fill="none" stroke="#3b2c18" stroke-width="3" stroke-linecap="round" opacity=".8">
+<circle cx="250" cy="220" r="44" fill="#C79D72" fill-opacity=".5"/>
+<path d="M190 400 Q195 285 250 282 Q305 285 310 400" fill="#9C7F57" fill-opacity=".5"/>
+</g>
+<rect width="400" height="500" fill="url(#v1)"/>
+<rect x="14" y="14" width="372" height="472" fill="none" stroke="#F7F2E6" stroke-width="2" stroke-dasharray="10 9" opacity=".7"/>
+<g transform="rotate(-3 200 448)"><rect x="70" y="424" width="260" height="44" fill="#F7F2E6" opacity=".92"/>
+<text x="200" y="455" text-anchor="middle" font-family="Kalam, cursive" font-size="24" fill="#22304A">photo: Seif age ~5</text></g>
+</svg></div><span class="tape"></span></div>
+      <div class="cap">Egypt, stop 1</div>
+    </div>
+
+    <!-- drive 1: the road strip -->
+    <div class="accw" id="stripW" aria-hidden="true">
+      <div class="shadow"></div>
+      <div class="acc" id="strip"></div>
+      <svg class="overlay" id="carSvg" viewBox="0 0 180 160" width="180" height="160">
+        <use href="#carBody"/>
+      </svg>
+    </div>
+    <div class="tag" id="stripTag">On the road: stop 1 to stop 2</div>
+
+    <!-- bird's-eye map -->
+    <div class="accw" id="mapW" aria-hidden="true">
+      <div class="shadow"></div>
+      <div class="acc" id="map"></div>
+      <svg class="overlay" id="mapOver" viewBox="0 0 1800 1000">
+        <defs><mask id="routeMask"><path id="routeRev" d="M362 98 C430 100 500 110 550 125 S800 260 1135 365" fill="none" stroke="#fff" stroke-width="14"/></mask></defs>
+        <path d="M362 98 C430 100 500 110 550 125 S800 260 1135 365" fill="none" stroke="#C2462E" stroke-width="5" stroke-dasharray="2 14" stroke-linecap="round" mask="url(#routeMask)"/>
+        <path id="route" d="M362 98 C430 100 500 110 550 125 S800 260 1135 365" fill="none" stroke="none"/>
+        <g id="token">
+          <circle r="58" fill="#F7F2E6" stroke="#C2462E" stroke-width="5"/>
+          <use href="#seifHead" transform="translate(-58 -66) scale(.58)"/>
+          <text y="44" text-anchor="middle" font-family="Kalam, cursive" font-size="17" fill="#22304A">Seif</text>
+        </g>
+        <g id="pin2" opacity="0"><path d="M1135 365 l0 -64" stroke="#22304A" stroke-width="3"/><path d="M1135 301 l60 12 l-60 14 Z" fill="#C2462E" stroke="#22304A" stroke-width="2"/><text x="1205" y="318" font-family="Kalam, cursive" font-size="30" fill="#22304A">stop 2</text></g>
+      </svg>
+    </div>
+    <div class="tag" id="mapTag">From above: Cairo to Riyadh</div>
+
+    <!-- stop 2 arrival: airplane window -->
+    <div class="wcard paper" id="wcard">
+      <div class="pane" id="pane">
+        <div class="ground" id="ground">
+          <svg id="groundSvg" viewBox="0 0 1800 1000">
+            <rect x="-800" y="-900" width="3600" height="1235" fill="#E3D6B8"/><rect x="1790" y="330" width="1000" height="1200" fill="#B9D0D1"/><rect x="-800" y="990" width="3600" height="600" fill="#E3D6B8"/>
+            <use href="#mapArt"/>
+            <path d="M362 98 C430 100 500 110 550 125 S800 260 1135 365" fill="none" stroke="#C2462E" stroke-width="5" stroke-dasharray="2 14" stroke-linecap="round" opacity=".55"/>
+            <path class="hop" id="hop1" d="M1135 365 Q1326 290 1518 377" fill="none" stroke="#C2462E" stroke-width="5" stroke-linecap="round"/>
+            <path class="hop" id="hop2" d="M1518 377 Q1640 320 1720 420" fill="none" stroke="#C2462E" stroke-width="5" stroke-linecap="round"/>
+            <path class="hop" id="hop3" d="M1720 420 Q1680 290 1563 340" fill="none" stroke="#C2462E" stroke-width="5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="sky"></div>
+        <div class="cloud" id="cl0"></div><div class="cloud" id="cl1"></div><div class="cloud" id="cl2"></div><div class="cloud" id="cl3"></div>
+        <svg class="plane" id="plane" viewBox="0 0 60 60" aria-hidden="true"><path d="M30 2 C33 2 34 8 34 14 L34 24 L58 36 L58 41 L34 35 L33 48 L41 54 L41 58 L30 55 L19 58 L19 54 L27 48 L26 35 L2 41 L2 36 L26 24 L26 14 C26 8 27 2 30 2 Z" fill="#F7F2E6" stroke="#22304A" stroke-width="2" stroke-linejoin="round"/></svg>
+        <div class="blind" id="blind"></div>
+      </div>
+      <div class="wcap" id="wcap"><div class="h">Stop 2: On the move</div><div class="s">Saudi, Abu Dhabi, Oman, Dubai</div></div>
+    </div>
+    <div class="stub paper" id="st0"><small>first move</small><b>Saudi</b><span class="stamp">arrived</span></div>
+    <div class="stub paper" id="st1"><small>new branch</small><b>Abu Dhabi</b><span class="stamp">arrived</span></div>
+    <div class="stub paper" id="st2"><small>new branch</small><b>Oman</b><span class="stamp">arrived</span></div>
+    <div class="stub paper" id="st3"><small>new branch</small><b>Dubai</b><span class="stamp">arrived</span></div>
+
+    <!-- stop 2: polaroid that becomes the chapter -->
+    <div class="snap" id="p2">
+      <div class="frame"></div>
+      <article class="sheet" aria-label="Stop 2, On the move">
+        <div class="slot"></div>
+        <div class="txt">
+          <div class="plaque"><span>From</span><b>age 6</b></div>
+          <span class="stopno"><i>2</i>Stop 2 of 11</span>
+          <h2>On the move</h2>
+          <p class="body">Saudi, then Abu Dhabi, then Oman, then Dubai. The same school every time, a new branch each time. Friends were hard to keep.</p>
+          <p class="note"><svg width="30" height="22" viewBox="0 0 30 22" aria-hidden="true"><path d="M3 3 Q5 16 24 15 M18 9 L25 15 L18 21" fill="none" stroke="#C2462E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>next stop: Dubai</p>
+        </div>
+      </article>
+      <div class="ph"><div class="img"><svg viewBox="0 0 400 500" aria-label="photo: Seif age ~7" role="img">
+<defs><linearGradient id="g2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D9C7A0"/><stop offset=".6" stop-color="#B79D72"/><stop offset="1" stop-color="#8F7651"/></linearGradient>
+<radialGradient id="v2" cx=".5" cy=".45" r=".7"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#2a1a08" stop-opacity=".45"/></radialGradient></defs>
+<rect width="400" height="500" fill="url(#g2)"/>
+<path d="M0 360 Q120 330 220 352 T400 340 L400 500 L0 500Z" fill="#7E6646" opacity=".55"/>
+<rect x="250" y="210" width="120" height="150" fill="#C9B07E" stroke="#4a3a24" stroke-width="2" opacity=".7"/><path d="M262 230h20v20h-20zM300 230h20v20h-20zM338 230h20v20h-20zM262 270h20v20h-20zM300 270h20v20h-20zM338 270h20v20h-20z" fill="#7E6646" opacity=".6"/>
+<g fill="none" stroke="#3b2c18" stroke-width="3" stroke-linecap="round" opacity=".8">
+<circle cx="170" cy="230" r="48" fill="#C79D72" fill-opacity=".5"/>
+<path d="M104 400 Q110 295 170 296 Q230 295 236 400" fill="#9C7F57" fill-opacity=".5"/>
+</g>
+<rect width="400" height="500" fill="url(#v2)"/>
+<rect x="14" y="14" width="372" height="472" fill="none" stroke="#F7F2E6" stroke-width="2" stroke-dasharray="10 9" opacity=".7"/>
+<g transform="rotate(-3 200 448)"><rect x="70" y="424" width="260" height="44" fill="#F7F2E6" opacity=".92"/>
+<text x="200" y="455" text-anchor="middle" font-family="Kalam, cursive" font-size="24" fill="#22304A">photo: Seif age ~7</text></g>
+</svg></div><span class="tape"></span></div>
+      <div class="cap">a new branch</div>
+    </div>
+
+    <div class="chip" id="chip" aria-hidden="true">
+      <svg width="34" height="24" viewBox="0 0 34 24"><rect x="1.5" y="1.5" width="31" height="21" rx="3" fill="#F7F2E6" stroke="#22304A" stroke-width="2"/><circle cx="11" cy="11" r="4" fill="none" stroke="#22304A" stroke-width="2"/><circle cx="23" cy="11" r="4" fill="none" stroke="#22304A" stroke-width="2"/><path d="M8 22 L11 17 L23 17 L26 22" fill="none" stroke="#22304A" stroke-width="2"/></svg>
+      <div><div class="k">Now playing</div><div class="t">[Seif's song]</div></div>
+      <div class="eq"><span></span><span></span><span></span><span></span></div>
+    </div>
+    <div class="ruler paper" id="ruler" aria-hidden="true">
+      <div class="lab" id="rlab">Stop 1 of 11: Egypt</div>
+      <svg id="rsvg" width="250" height="22" viewBox="0 0 250 22"></svg>
+    </div>
+  </div>
+</section>
+
+<section class="work" id="work" aria-label="The work">
+  <div class="card paper">
+    <h2>The work</h2>
+    <p>This is where Skip to the work lands: the projects, straight away.</p>
+    <p class="hand">This preview ends at stop 2. The other nine stops come next.</p>
+    <button id="back">Back to the start</button>
+  </div>
+</section>
+</main>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <g id="carBody">
+    <path d="M8 132 L8 106 Q10 92 30 90 L50 88 Q64 62 90 60 L130 60 Q148 62 158 88 L168 92 Q178 96 178 112 L178 132 Z" fill="#C2462E" stroke="#22304A" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M60 88 Q70 68 92 66 L128 66 Q142 68 150 88 Z" fill="#F7F2E6" stroke="#22304A" stroke-width="2.4"/>
+    <path d="M170 104 l8 0 M8 112 l10 0" stroke="#22304A" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="172" cy="100" r="4" fill="#E6C977" stroke="#22304A" stroke-width="1.5"/>
+    <use href="#seifHead" transform="translate(4 -10) scale(.95)"/>
+    <g id="w1" transform="rotate(0 45 132)"><circle cx="45" cy="132" r="18" fill="#22304A"/><circle cx="45" cy="132" r="7" fill="#EBDFC4"/><path d="M45 117 L45 147 M30 132 L60 132" stroke="#EBDFC4" stroke-width="2"/></g>
+    <g id="w2" transform="rotate(0 145 132)"><circle cx="145" cy="132" r="18" fill="#22304A"/><circle cx="145" cy="132" r="7" fill="#EBDFC4"/><path d="M145 117 L145 147 M130 132 L160 132" stroke="#EBDFC4" stroke-width="2"/></g>
+  </g>
+</defs></svg>
+
+<script>
+(() => {
+const PHONE = true;
+if (PHONE) document.documentElement.classList.add('is-phone');
+const $ = s => document.querySelector(s);
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const seg = (p, a, b) => clamp((p - a) / (b - a));
+const eio = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const eo = t => 1 - Math.pow(1 - t, 3);
+const D2R = Math.PI / 180;
+
+/* ---------- map art, built once ---------- */
+const P = (lon, lat) => [Math.round((lon - 24) * 50), Math.round((32 - lat) * 50)];
+const LL = [[25.2,31.6],[27.2,31.4],[29,30.9],[30.3,31.4],[31.2,31.6],[32.3,31.3],[33.5,31.1],[34.3,31.3],[34.6,31.8]].map(a => P(...a));
+const land = [[-40, 4], ...LL, [840, -40], [1840, -40], [1840, 335],
+  ...[[58.8,25.6],[57.3,25.8],[56.9,26.9],[56.3,27.2],[55.5,26.7],[54.2,26.7],[53,27],[52,27.6],[51.2,28.5],[50.7,29.3],[50,30.1],[48.9,30.1],
+  [48.1,29.5],[48.4,28.5],[49.3,27.4],[50.1,26.6],[50.2,25.9],[50.6,25.2],[50.8,24.75],[51.2,25.6],[51.5,26.1],[51.6,25.3],[51.6,24.5],[52,24],[53.5,24.1],[54.4,24.3],[55,24.9],[55.3,25.3],[55.9,25.7],[56.1,26.2],[56.4,26.3],[56.3,25.6],[56.4,24.9],[57.2,23.9],[58.6,23.6],[59.8,22.5],[59,21],[58.3,20.4],[57.7,19],[56.6,18.5],[55.2,17.4],[54,16.9],[52.2,15.7],[50,15],[48.5,14],[45.5,13.1],[43.5,12.7],
+  [43,14],[42.7,15.6],[42,17],[41,18.5],[40,20],[39.1,21.4],[38.8,22.5],[37.5,24.6],[36.5,26.3],[35.5,28],[34.95,29.55],[34.75,29.3],[34.5,28.5],[34.3,27.8],[33.8,27.9],[33.2,28.6],[32.55,29.95],[32.7,29],[33.4,27.7],[33.9,26.6],[34.6,25.5],[35.7,23.9],[36.9,22],[37.2,21],[37.4,19.5],[38.5,18],[39.3,15.9],[40.2,15.2],[41.5,13.8],[42.6,12]].map(a => P(...a)),
+  [930, 1040], [-40, 1040]];
+function smooth(pts, closed) {
+  const n = pts.length; let d = 'M' + pts[0];
+  for (let i = 0; i < (closed ? n : n - 1); i++) {
+    const p0 = pts[(i - 1 + n) % n], p1 = pts[i], p2 = pts[(i + 1) % n], p3 = pts[(i + 2) % n];
+    const t = .16;
+    d += `C${(p1[0] + (p2[0] - (closed || i ? p0[0] : p1[0])) * t).toFixed(1)},${(p1[1] + (p2[1] - (closed || i ? p0[1] : p1[1])) * t).toFixed(1)} ${(p2[0] - (p3[0] - p1[0]) * t).toFixed(1)},${(p2[1] - (p3[1] - p1[1]) * t).toFixed(1)} ${p2}`;
+  }
+  return d + (closed ? 'Z' : '');
+}
+const landD = smooth(land, true);
+$('#land').setAttribute('d', landD); $('#landHalo').setAttribute('d', landD);
+$('#nile').setAttribute('d', smooth([[31.4,31.4],[31.2,30.4],[31.25,29.6],[30.9,28.4],[31.0,27.4],[31.8,26.4],[32.7,25.6],[32.9,24.3],[32.4,23.2],[31.6,22]].map(a => P(...a)), false));
+let g = '';
+for (let lon = 25; lon < 60; lon += 5) g += `<path d="M${(lon - 24) * 50} 0 L${(lon - 24) * 50} 1000"/>`;
+for (let lat = 15; lat < 32; lat += 5) g += `<path d="M0 ${(32 - lat) * 50} L1800 ${(32 - lat) * 50}"/>`;
+$('#grat').innerHTML = g;
+
+/* ---------- folding paper ---------- */
+function makeAcc(el, n, sym, vbW, vbH, dir) {
+  const panels = [];
+  for (let i = 0; i < n; i++) {
+    const d = document.createElement('div'); d.className = 'panel';
+    const vb = dir === 'x' ? `${i * vbW / n} 0 ${vbW / n} ${vbH}` : `0 ${i * vbH / n} ${vbW} ${vbH / n}`;
+    d.innerHTML = `<svg viewBox="${vb}" preserveAspectRatio="none"><use href="#${sym}"/></svg><div class="crease"></div><div class="shade"></div>`;
+    el.appendChild(d); panels.push({ el: d, shade: d.querySelector('.shade') });
+  }
+  return { el, n, panels, dir, pw: 0, ph: 0, size(pw, ph) { this.pw = pw; this.ph = ph; panels.forEach(p => { p.el.style.width = pw + 'px'; p.el.style.height = ph + 'px'; }); } };
+}
+// f: 0 flat .. 1 folded; anchor: which end stays put (0 start, 1 end, .5 centre). returns the folded length.
+function fold(acc, f, anchor) {
+  const th = f * 86 * D2R, c = Math.cos(th), s = Math.sin(th);
+  const size = acc.dir === 'x' ? acc.pw : acc.ph, full = acc.n * size, total = full * c, off = (full - total) * anchor;
+  acc.panels.forEach((p, i) => {
+    const pos = off + i * size * c, z = i % 2 ? -size * s : 0, a = (i % 2 ? -1 : 1) * th;
+    p.el.style.transform = acc.dir === 'x'
+      ? `translate3d(${pos}px,0,${z}px) rotateY(${a}rad)`
+      : `translate3d(0,${pos}px,${z}px) rotateX(${-a}rad)`;
+    p.shade.style.opacity = f * (i % 2 ? .35 : .9);
+  });
+  return { off, total };
+}
+const strip = makeAcc($('#strip'), 6, 'stripArt', 3120, 300, 'x');
+const map = makeAcc($('#map'), 4, 'mapArt', 1800, 1000, PHONE ? 'y' : 'x');
+if (PHONE) $('#mapW').classList.add('y');
+
+/* ---------- layout ---------- */
+let W, H, L = {};
+const polaroid = (cx, cy, w, r) => {
+  const b = w * .055, bb = w * .26, off = (bb - b) / 2;
+  return { ph: { cx, cy, w, r }, fr: { cx: cx - Math.sin(r * D2R) * off, cy: cy + Math.cos(r * D2R) * off, w: w + 2 * b, h: w * 1.25 + b + bb, r }, bb };
+};
+function snapLayout(id, k0, sheet, photo2) {
+  const el = $(id), k1 = polaroid(W / 2, H / 2, H * 1.2 / 1.25, 0);
+  const sh = el.querySelector('.sheet');
+  sh.style.left = (sheet.cx - sheet.w / 2) + 'px'; sh.style.top = (sheet.cy - sheet.h / 2) + 'px';
+  sh.style.width = sheet.w + 'px'; sh.style.height = sheet.h + 'px'; sh.style.transform = `rotate(${sheet.r}deg)`;
+  sh.style.setProperty('--slot', (PHONE ? photo2.slot : photo2.slot) + 'px');
+  return { el, frame: el.querySelector('.frame'), ph: el.querySelector('.ph'), tape: el.querySelector('.tape'), cap: el.querySelector('.cap'), sheet: sh, img: el.querySelector('.img'),
+    k0, k1, k2: { ph: { cx: photo2.cx, cy: photo2.cy, w: photo2.w, r: photo2.r }, fr: sheet }, pw0: k0.ph.w };
+}
+function layout() {
+  W = innerWidth; H = innerHeight;
+  const cover = $('#cover');
+  // gate
+  let k0;
+  if (PHONE) {
+    const top = H - 24 - cover.offsetHeight;
+    const pw = Math.min(214, (top - 70 - 24) / 1.565);
+    const fcy = (60 + top) / 2;
+    k0 = polaroid(W / 2 + 6, fcy - (pw * .26 - pw * .055) / 2 + 4, pw, -3);
+  } else {
+    cover.style.left = Math.max(56, W * .075) + 'px';
+    cover.style.top = Math.max(24, (H - cover.offsetHeight) / 2 - 10) + 'px';
+    k0 = polaroid(Math.min(W * .7, W - 260), H * .46, Math.min(250, (H - 150) / 1.565), 4);
+  }
+  // chapter sheets
+  let sheet, photo2;
+  if (PHONE) {
+    sheet = { cx: W / 2, cy: (64 + H - 16) / 2, w: W - 32, h: H - 80, r: -.6 };
+    const pw = Math.min(206, (H - 80) * .3);
+    photo2 = { cx: W / 2 - 34, cy: 64 + 34 + pw * .625, w: pw, r: -3, slot: 34 + pw * 1.25 + 30 };
+  } else {
+    sheet = { cx: W / 2, cy: H / 2 - 12, w: Math.min(1180, W - 120), h: Math.min(660, H - 130), r: -.7 };
+    const pw = sheet.h * .66 / 1.25, left = sheet.cx - sheet.w / 2;
+    photo2 = { cx: left + 64 + pw / 2, cy: sheet.cy, w: pw, r: -2.5, slot: 64 + pw + 64 };
+  }
+  L.s1 = snapLayout('#p1', k0, sheet, photo2);
+  // strip
+  const sh = PHONE ? 320 : 300, k = sh / 300;
+  strip.size(520 * k, sh);
+  L.strip = { k, sh, len: 3120 * k, x0: PHONE ? 16 : 80, y: PHONE ? H * .5 - sh / 2 + 10 : H * .5 - sh / 2 + 16 };
+  L.strip.cs0 = L.strip.x0 + 250 * k; L.strip.cs1 = PHONE ? W * .12 : W - 440;
+  const car = $('#carSvg'); L.cz = PHONE ? .74 : 1; car.setAttribute('width', 180 * k * L.cz); car.setAttribute('height', 160 * k * L.cz);
+  $('#stripW .shadow').style.cssText = `width:${520 * k}px;height:${sh}px`;
+  // map
+  if (PHONE) { const mh = Math.min(H - 250, 620); L.map = { h: mh, w: mh * 1.8, k: mh / 1000 }; L.map.y = (H - mh) / 2 + 20; map.size(L.map.w, mh / 4); }
+  else { const mw = Math.min(W - 200, (H - 180) * 1.8); L.map = { w: mw, h: mw / 1.8, k: mw / 1800 }; L.map.x = (W - mw) / 2; L.map.y = (H - mw / 1.8) / 2 + 4; map.size(mw / 4, mw / 1.8); }
+  const mo = $('#mapOver'); mo.setAttribute('width', L.map.w); mo.setAttribute('height', L.map.h);
+  L.routeLen = $('#route').getTotalLength();
+  // window card + stubs
+  const wc = $('#wcard'), pane = $('#pane');
+  if (PHONE) {
+    L.card = { x: 16, y: 66, w: 358, h: 540 };
+    L.card.y = Math.max(62, Math.min(76, H - 540 - 168)); L.card.x = (W - 358) / 2;
+    L.pane = { x: 34, y: 34, w: 290, h: 380 };
+    $('#wcap').style.top = '442px';
+    L.stubs = [0, 1, 2, 3].map(i => ({ x: L.card.x + (i % 2) * 184, y: L.card.y + 540 + 14 + Math.floor(i / 2) * 78, r: [-2, 1.5, 1, -1.5][i] }));
+    L.k0b = polaroid(L.card.x + 358 - 84, L.card.y + 40, 112, 7);
+  } else {
+    L.card = { w: 470, h: Math.min(600, H - 120) }; L.card.x = W * .41 - 235 - 60; L.card.y = (H - L.card.h) / 2 - 10;
+    L.pane = { w: 350, h: L.card.h - 170, x: 60, y: 44 };
+    $('#wcap').style.top = (L.card.h - 102) + 'px';
+    L.stubs = [0, 1, 2, 3].map(i => ({ x: L.card.x + 470 + 56 + (i % 2) * 22, y: L.card.y + 20 + i * ((L.card.h - 92) / 3.2), r: [-3, 2, -1.5, 2.5][i] }));
+    L.k0b = polaroid(L.card.x + 470 - 34, L.card.y + 74, 150, 8);
+  }
+  wc.style.height = L.card.h + 'px';
+  Object.assign(pane.style, { left: L.pane.x + 'px', top: L.pane.y + 'px', width: L.pane.w + 'px', height: L.pane.h + 'px' });
+  L.gs = PHONE ? .82 : .9;
+  const gsvg = $('#groundSvg'); gsvg.setAttribute('width', 1800 * L.gs); gsvg.setAttribute('height', 1000 * L.gs);
+  L.hops = ['#hop1', '#hop2', '#hop3'].map(s => { const el = $(s), len = el.getTotalLength(); el.style.strokeDasharray = len; return { el, len }; });
+  L.s2 = snapLayout('#p2', L.k0b, sheet, photo2);
+  // props
+  const pen = $('#pencil'), ring = $('#ring'), clip = $('#clip');
+  if (PHONE) { pen.style.cssText = `left:${W - 210}px;top:${H - 120}px;transform:rotate(-28deg)`; ring.style.cssText = `left:-70px;top:${H * .42}px`; clip.style.cssText = 'display:none'; }
+  else { pen.style.cssText = `left:${W - 330}px;top:${H - 70}px;transform:rotate(-8deg)`; ring.style.cssText = `left:${W - 170}px;top:-60px`; clip.style.cssText = `left:${W * .5}px;top:${H - 70}px;transform:rotate(70deg)`; }
+  // chip
+  const chip = $('#chip');
+  if (PHONE) chip.style.cssText = `left:${W / 2 - 120}px;top:${H - 92}px`;
+  else chip.style.cssText = `left:${W - 330}px;top:26px`;
+  // ruler dots
+  let r = '<path d="M8 11 L242 11" stroke="#22304A" stroke-width="1.6" stroke-dasharray="3 5"/>';
+  for (let i = 0; i < 11; i++) r += `<circle cx="${8 + i * 23.4}" cy="11" r="${i < 2 ? 5 : 3.5}" fill="${i < 2 ? '#22304A' : '#EBDFC4'}" stroke="#22304A" stroke-width="1.5"/>`;
+  r += '<circle id="rdot" cx="8" cy="11" r="7" fill="#C2462E" stroke="#22304A" stroke-width="1.5"/>';
+  $('#rsvg').innerHTML = r;
+  // scroll range
+  const j = $('#journey'); L.top = j.offsetTop; L.range = j.offsetHeight - H;
+}
+
+/* ---------- drawing helpers ---------- */
+const lr = (a, b, t) => { const o = {}; for (const k in a) o[k] = lerp(a[k], b[k], t); return o; };
+const poly = f => { const c = Math.cos(f.r * D2R), s = Math.sin(f.r * D2R); return [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([x, y]) => { const px = x * f.w / 2, py = y * f.h / 2; return `${(f.cx + px * c - py * s).toFixed(1)}px ${(f.cy + px * s + py * c).toFixed(1)}px`; }).join(','); };
+const mix = (a, b, t) => `rgb(${a.map((v, i) => Math.round(lerp(v, b[i], t))).join(',')})`;
+const show = (el, o) => { el.style.opacity = o; el.style.visibility = o <= .001 ? 'hidden' : 'visible'; };
+
+function drawSnap(S, t, develop) {
+  const t1 = eio(seg(t, 0, .5)), t2 = eio(seg(t, .42, 1));
+  const ph = lr(lr(S.k0.ph, S.k1.ph, t1), S.k2.ph, t2);
+  const fr = lr(lr(S.k0.fr, S.k1.fr, t1), S.k2.fr, t2);
+  S.frame.style.clipPath = `polygon(${poly(fr)})`;
+  S.frame.style.backgroundColor = mix([247, 242, 230], [235, 223, 196], t2);
+  const sc = ph.w / 400;
+  S.ph.style.transform = `translate(${ph.cx}px,${ph.cy}px) rotate(${ph.r}deg) scale(${sc}) translate(-200px,-250px)`;
+  const d = develop ? clamp(seg(t, 0, .45)) : 1;
+  S.img.style.filter = d >= 1 ? 'none' : `sepia(${.85 - .85 * d}) brightness(${.62 + .38 * d}) contrast(${.85 + .15 * d})`;
+  S.tape.style.opacity = Math.max(1 - seg(t, 0, .25), seg(t, .85, 1)) * .82;
+  // caption sits in the polaroid's bottom strip
+  const fs = ph.w / S.pw0, bb = ph.w * .26, cy = ph.cy + Math.cos(ph.r * D2R) * (ph.w * .625 + bb / 2), cx = ph.cx - Math.sin(ph.r * D2R) * (ph.w * .625 + bb / 2);
+  S.cap.style.transform = `translate(${cx}px,${cy}px) rotate(${ph.r}deg) scale(${fs}) translate(-50%,-55%)`;
+  show(S.cap, 1 - seg(t, .04, .18));
+  const ct = seg(t, .8, 1);
+  show(S.sheet, ct);
+  S.sheet.style.translate = RM ? '' : `0 ${(1 - eo(ct)) * 16}px`;
+}
+
+/* ---------- the scene, scrubbed by scroll ---------- */
+const cover = $('#cover'), hint = $('#hint'), stripW = $('#stripW'), mapW = $('#mapW'), carSvg = $('#carSvg'), stripTag = $('#stripTag'), mapTag = $('#mapTag');
+const ring = $('#stampRing'), passed = $('#passed'), w1 = $('#w1'), w2 = $('#w2'), token = $('#token'), routeRev = $('#routeRev'), pin2 = $('#pin2');
+const wcard = $('#wcard'), blind = $('#blind'), ground = $('#ground'), plane = $('#plane'), chip = $('#chip'), ruler = $('#ruler'), rlab = $('#rlab');
+const stubs = [0, 1, 2, 3].map(i => $('#st' + i)), clouds = [0, 1, 2, 3].map(i => $('#cl' + i));
+const eqs = [...document.querySelectorAll('.chip .eq span')];
+
+function render(p) { renderGate(p); renderRest(p); }
+function renderGate(p) {
+  // gate
+  const tz = eio(seg(p, .025, .09));
+  cover.style.transform = PHONE ? `translateY(${tz * (H * .7)}px) rotate(${tz * 4}deg)` : `translateX(${-tz * W * .7}px) rotate(${-tz * 7}deg)`;
+  show(cover, 1 - seg(p, .05, .09));
+  cover.inert = p > .05;
+  show(hint, 1 - seg(p, 0, .025));
+
+  // stop 1 polaroid -> chapter, then it slides away
+  const s1 = L.s1, e1 = eio(seg(p, .19, .265));
+  drawSnap(s1, seg(p, .03, .115), true);
+  s1.el.style.transform = e1 ? `translate(${PHONE ? 0 : -W * .05 * e1}px,${-H * 1.15 * e1}px) rotate(${-5 * e1}deg)` : '';
+  show(s1.el, 1 - seg(p, .255, .27));
+}
+function renderRest(p) {
+
+  // drive 1: strip unfolds, pans, folds
+  const S = L.strip, inS = eo(seg(p, .195, .255));
+  const fS = 1 - eio(seg(p, .225, .3)) + eio(seg(p, .545, .585));
+  const t = seg(p, .3, .54);
+  const carX = 250 + t * (3120 - (PHONE ? 330 : 380) - 250);
+  const cs = lerp(S.cs0, S.cs1, t);
+  const pan = cs - S.x0 - carX * S.k;
+  const fr = fold(strip, fS, p < .42 ? 0 : 1);
+  const out = eio(seg(p, .565, .6));
+  stripW.style.transform = `translate(${S.x0 + pan}px,${lerp(H + 60, S.y, inS) - out * H * .75}px) rotate(${(1 - inS) * 6 - out * 3}deg)`;
+  show(stripW, Math.min(seg(p, .195, .2), 1 - seg(p, .585, .6)));
+  stripW.style.perspectiveOrigin = `${fr.off + fr.total / 2}px ${S.sh / 2}px`;
+  const ssh = stripW.querySelector('.shadow'); ssh.style.transform = `translate(10px,18px) scaleX(6)`; ssh.style.opacity = 1 - seg(fS, 0, .12);
+  const carOn = 1 - seg(fS, 0, .05);
+  carSvg.style.opacity = carOn;
+  const bob = RM ? 0 : Math.sin(t * 90) * 1.4 * S.k;
+  carSvg.style.transform = `translate(${(carX - 90 * L.cz) * S.k}px,${(212 - 150 * L.cz + 4 * L.cz) * S.k + bob}px)`;
+  const rot = t * 5200;
+  w1.setAttribute('transform', `rotate(${rot} 45 132)`); w2.setAttribute('transform', `rotate(${rot} 145 132)`);
+  const ck = seg(carX, 1300, 1470);
+  ring.style.strokeDashoffset = 440 * (1 - ck); passed.style.opacity = seg(carX, 1470, 1540);
+  show(stripTag, Math.min(seg(p, .27, .3), 1 - seg(p, .53, .555)));
+  stripTag.style.transform = `translate(${PHONE ? 16 : S.x0}px,${S.y - (PHONE ? 58 : 54)}px) rotate(-2deg)`;
+
+  // bird's-eye map: unfolds, the route draws, then it folds into a desk prop
+  const M = L.map;
+  const fM = 1 - eio(seg(p, .6, .645)) + eio(seg(p, .71, .75));
+  const inM = eo(seg(p, .585, .62)), prop = eio(seg(p, .742, .785));
+  const fm = fold(map, fM, .5);
+  mapW.style.perspectiveOrigin = PHONE ? `${M.w / 2}px ${fm.off + fm.total / 2}px` : `${fm.off + fm.total / 2}px ${M.h / 2}px`;
+  const rv = eio(seg(p, .65, .705));
+  const pt = $('#route').getPointAtLength(rv * L.routeLen);
+  routeRev.style.strokeDasharray = L.routeLen; routeRev.style.strokeDashoffset = L.routeLen * (1 - rv);
+  token.setAttribute('transform', `translate(${pt.x} ${pt.y}) scale(${PHONE ? 1.15 : 1})`);
+  pin2.style.opacity = seg(p, .69, .705);
+  $('#mapOver').style.opacity = Math.min(seg(p, .64, .652), 1 - seg(p, .708, .716));
+  let mx, my;
+  if (PHONE) {
+    const want = W / 2 - pt.x * M.k;
+    mx = clamp(want, W - M.w - 16, 16); my = M.y;
+  } else { mx = M.x; my = M.y; }
+  // folded bundle -> lies in a corner of the desk
+  const bundleC = PHONE ? [mx + M.w / 2, my + fm.off + fm.total / 2] : [mx + fm.off + fm.total / 2, my + M.h / 2];
+  const target = PHONE ? [W - 70, H - 150] : [W * .1, H * .78];
+  const dx = (target[0] - bundleC[0]) * prop, dy = (target[1] - bundleC[1]) * prop;
+  mapW.style.transform = PHONE ? `translate(${mx}px,${my + (1 - inM) * H * .8 + prop * H * .6}px)` : `translate(${mx + dx}px,${my + dy + (1 - inM) * H * .8}px) rotate(${-14 * prop}deg) scale(${1 - prop * .35})`;
+  mapW.style.transformOrigin = `${bundleC[0] - mx}px ${bundleC[1] - my}px`;
+  show(mapW, Math.min(seg(p, .585, .595), PHONE ? 1 - prop : 1 - seg(p, .955, .965)));
+  mapW.querySelector('.shadow').style.cssText = PHONE
+    ? `width:${M.w}px;height:${M.h}px;transform:translate(10px,18px);opacity:${1 - seg(fM, 0, .12)}`
+    : `width:${M.w}px;height:${M.h}px;transform:translate(10px,18px);opacity:${1 - seg(fM, 0, .12)}`;
+  show(mapTag, Math.min(seg(p, .64, .655), 1 - seg(p, .705, .715)));
+  mapTag.style.transform = PHONE ? `translate(16px,${M.y - 54}px) rotate(-2deg)` : `translate(${M.x}px,${M.y - 48}px) rotate(-2deg)`;
+
+  // airplane window
+  const C = L.card, wIn = eio(seg(p, .725, .785));
+  wcard.style.transform = `translate(${C.x}px,${lerp(-C.h - 60, C.y, wIn)}px) rotate(${lerp(-9, -1.2, wIn)}deg)`;
+  show(wcard, Math.min(seg(p, .725, .73), 1 - seg(p, .96, .97)));
+  blind.style.transform = `translateY(${-104 * eio(seg(p, .772, .8))}%)`;
+  const h = [seg(p, .8, .83), seg(p, .83, .86), seg(p, .86, .89)];
+  let hp = null, hd = 0;
+  L.hops.forEach((o, i) => {
+    const e = eio(h[i]); o.el.style.strokeDashoffset = o.len * (1 - e);
+    if (!hp && (h[i] < 1 || i === 2)) { const a = o.el.getPointAtLength(e * o.len), b = o.el.getPointAtLength(Math.min(o.len, e * o.len + 2)); const a0 = o.el.getPointAtLength(Math.max(0, e * o.len - 2)); hp = a; hd = Math.atan2(b.y - a0.y, b.x - a0.x); }
+  });
+  const gs = L.gs, Pw = L.pane.w, Ph = L.pane.h;
+  ground.style.transformOrigin = `${hp.x * gs}px ${hp.y * gs}px`;
+  ground.style.transform = `translate(${Pw / 2 - hp.x * gs}px,${Ph * .58 - hp.y * gs}px) rotateX(${RM ? 0 : 38}deg)`;
+  const lift = Math.sin(Math.PI * (h[0] < 1 ? h[0] : h[1] < 1 ? h[1] : h[2]));
+  plane.style.transform = `translate(${Pw / 2}px,${Ph * .58}px) rotate(${hd / D2R + 90}deg) scale(${.9 + .25 * lift})`;
+  clouds.forEach((c, i) => {
+    const sp = [1.9, 2.6, 1.4, 3.1][i], x0 = [-.25, .45, .1, .6][i];
+    const y = ((p * sp * 9 + i * .29) % 1.4) * (Ph + 160) - 120;
+    c.style.transform = `translate(${x0 * Pw}px,${y}px) scale(${[1, .7, 1.2, .85][i]})`;
+  });
+  const sIn = [.775, .8, .83, .86], sArr = [.79, .83, .86, .89];
+  stubs.forEach((el, i) => {
+    const a = eo(seg(p, sIn[i], sIn[i] + .014)), s = L.stubs[i];
+    el.style.transform = `translate(${s.x + (1 - a) * (PHONE ? 0 : 70)}px,${s.y + (1 - a) * (PHONE ? 40 : 0)}px) rotate(${s.r + (1 - a) * 8}deg)`;
+    show(el, Math.min(a, 1 - seg(p, .96, .97)));
+    const st = seg(p, sArr[i] - .004, sArr[i] + .004);
+    const stamp = el.querySelector('.stamp'); stamp.style.opacity = st; stamp.style.transform = `rotate(-14deg) scale(${RM ? 1 : 1.5 - .5 * st})`;
+  });
+
+  // stop 2 polaroid -> chapter
+  const s2 = L.s2, a2 = seg(p, .872, .89);
+  drawSnap(s2, seg(p, .89, .965), false);
+  s2.el.style.transform = a2 < 1 ? `translate(0,${(1 - eo(a2)) * -30}px)` : '';
+  show(s2.el, a2);
+
+  // now playing + ruler
+  const ch = Math.min(seg(p, .27, .3), 1 - seg(p, .765, .79));
+  show(chip, ch);
+  eqs.forEach((e, i) => e.style.transform = `scaleY(${.5 + Math.abs(Math.sin(p * 240 + i * 1.7)) * 1.9})`);
+  show(ruler, seg(p, .09, .12));
+  const prog = seg(p, .29, .89);
+  $('#rdot').setAttribute('cx', 8 + prog * 23.4);
+  const lab = p < .27 ? 'Stop 1 of 11: Egypt' : p < .89 ? 'Driving to stop 2' : 'Stop 2 of 11: On the move';
+  if (rlab.textContent !== lab) rlab.textContent = lab;
+}
+
+/* ---------- scroll loop: follows the reader, never plays by itself ---------- */
+const REST = [0, .16, .47, .705, .895, 1], CUTS = [.08, .29, .56, .79, .94];
+let cur = 0, target = 0, raf = 0;
+const stage = $('#stage');
+function readScroll() { target = clamp((scrollY - L.top) / L.range); }
+function frame() {
+  raf = 0;
+  if (RM) {
+    let i = 0; while (i < CUTS.length && target >= CUTS[i]) i++;
+    const d = Math.min(...CUTS.map(c => Math.abs(target - c)));
+    stage.style.opacity = clamp(d / .018, .0, 1) * .85 + .15;
+    render(REST[i]); return;
+  }
+  cur += (target - cur) * .16;
+  if (Math.abs(target - cur) < .0004) cur = target;
+  render(cur);
+  if (cur !== target) raf = requestAnimationFrame(frame);
+}
+const kick = () => { readScroll(); if (!raf) raf = requestAnimationFrame(frame); };
+addEventListener('scroll', kick, { passive: true });
+addEventListener('resize', () => { layout(); kick(); });
+const goTo = q => scrollTo({ top: L.top + q * L.range, behavior: RM ? 'auto' : 'smooth' });
+$('#go').addEventListener('click', () => goTo(.16));
+$('#skip').addEventListener('click', () => $('#work').scrollIntoView({ behavior: RM ? 'auto' : 'smooth' }));
+$('#back').addEventListener('click', () => scrollTo({ top: 0, behavior: RM ? 'auto' : 'smooth' }));
+layout(); readScroll(); cur = target; render(cur);
+// paint every scene once while the gate is up, so first reveals don't stutter
+const warm = () => { const seq = [.2, .3, .45, .6, .66, .74, .8, .86, .93]; stage.classList.add('warming');
+  const step = () => { if (seq.length) { renderRest(seq.shift()); requestAnimationFrame(step); } else { stage.classList.remove('warming'); render(cur); } };
+  requestAnimationFrame(step); };
+(document.fonts ? document.fonts.ready : Promise.resolve()).then(() => { layout(); render(cur); warm(); });
+})();
+</script>
+</body>
+</html>
